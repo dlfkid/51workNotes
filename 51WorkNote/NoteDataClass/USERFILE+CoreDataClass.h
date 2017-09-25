@@ -1,5 +1,5 @@
 //
-//  NOTEDATA+CoreDataClass.h
+//  USERFILE+CoreDataClass.h
 //  51WorkNote
 //
 //  Created by Ivan_deng on 2017/9/25.
@@ -12,10 +12,10 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-@interface NOTEDATA : NSManagedObject
+@interface USERFILE : NSManagedObject
 
 @end
 
 NS_ASSUME_NONNULL_END
 
-#import "NOTEDATA+CoreDataProperties.h"
+#import "USERFILE+CoreDataProperties.h"

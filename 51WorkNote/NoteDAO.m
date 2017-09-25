@@ -8,6 +8,7 @@
 
 #pragma mark - Definitions
 #define HOSTNAME @"http://www.51work6.com/service/mynotes/WebService.php"
+#define VALIDTIME 3
 
 #pragma mark - Importations
 #import "NSNumber+Messager.h"
@@ -15,6 +16,7 @@
 #import "NoteDAO.h"
 #import "MainViewController.h"
 #import "NOTEDATA+CoreDataClass.h"
+#import "USERFILE+CoreDataClass.h"
 #import <UIKit/UIKit.h>
 
 static NoteDAO * sharedSingleton;
@@ -29,6 +31,7 @@ static NoteDAO * sharedSingleton;
         });
         sharedSingleton.severNotes = [NSMutableArray array];
         sharedSingleton.localNotes = [NSMutableArray array];
+        sharedSingleton.IDStorage = [NSMutableArray array];
     }
     return sharedSingleton;
 }
@@ -153,7 +156,7 @@ static NoteDAO * sharedSingleton;
 }
 
 - (NSMutableArray *)loadAllNote {
-    
+    [self loadNotesFromCoreData];
     return _localNotes;
 }
 
@@ -230,5 +233,43 @@ static NoteDAO * sharedSingleton;
         NSLog(@"Do not find target Notes");
     }
 }
+
+#pragma mark - IDmanagement
+- (NSNumber *)getAllIDs {
+    NSManagedObjectContext *context = [self managedObjectContext];
+    NSEntityDescription *entityDesctiption = [NSEntityDescription entityForName:@"USERFILE" inManagedObjectContext:context];
+    NSFetchRequest *fetchReq = [[NSFetchRequest alloc]init];
+    fetchReq.entity = entityDesctiption;
+    
+    NSSortDescriptor *sortDes = [[NSSortDescriptor alloc]initWithKey:@"username" ascending:true];
+    NSArray *sortResult = @[sortDes];
+    fetchReq.sortDescriptors = sortResult;
+    
+    NSError *error = nil;
+    NSArray *listData = [context executeFetchRequest:fetchReq error:&error];
+    if(error){
+        NSLog(@"Error : %@",error.localizedDescription);
+    }else{
+        for(USERFILE *userData in listData) {
+            [self.IDStorage addObject:userData];
+            if(userData.issigned == true && userData.valid <= VALIDTIME) {
+                self.UserID = userData.username;
+                return [NSNumber numberWithInt:1];
+            }
+        }
+    }
+    return [NSNumber numberWithInt:0];
+}
+
+- (void)registUserID:(USERFILE *)userID {
+    NSManagedObjectContext *context = [self managedObjectContext];
+    USERFILE *newUser = [NSEntityDescription insertNewObjectForEntityForName:@"USERFILE" inManagedObjectContext:context];
+    newUser.username = userID.username;
+    newUser.password = userID.password;
+    newUser.valid = userID.valid;
+    newUser.issigned = userID.issigned;
+    [self saveContext];
+}
+
 
 @end

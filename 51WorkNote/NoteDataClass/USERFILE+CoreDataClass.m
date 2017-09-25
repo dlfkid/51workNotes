@@ -1,5 +1,5 @@
 //
-//  NOTEDATA+CoreDataClass.m
+//  USERFILE+CoreDataClass.m
 //  51WorkNote
 //
 //  Created by Ivan_deng on 2017/9/25.
@@ -7,8 +7,8 @@
 //
 //
 
-#import "NOTEDATA+CoreDataClass.h"
+#import "USERFILE+CoreDataClass.h"
 
-@implementation NOTEDATA
+@implementation USERFILE
 
 @end

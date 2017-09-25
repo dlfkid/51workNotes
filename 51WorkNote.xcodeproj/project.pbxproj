@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		B42D74981F78D80F00CB803B /* SimpleTabBar.m in Sources */ = {isa = PBXBuildFile; fileRef = B42D74971F78D80F00CB803B /* SimpleTabBar.m */; };
 		B48B2EDC1F75E72700C95524 /* NSNumber+Messager.m in Sources */ = {isa = PBXBuildFile; fileRef = B48B2EDB1F75E72700C95524 /* NSNumber+Messager.m */; };
 		B4BA1A251F75043200EDD935 /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = B4BA1A241F75043200EDD935 /* main.m */; };
 		B4BA1A281F75043200EDD935 /* AppDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = B4BA1A271F75043200EDD935 /* AppDelegate.m */; };
@@ -16,12 +17,13 @@
 		B4BA1A3F1F7504E400EDD935 /* MainViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = B4BA1A3E1F7504E400EDD935 /* MainViewController.m */; };
 		B4BA1A421F7505A600EDD935 /* CoreDataManager.m in Sources */ = {isa = PBXBuildFile; fileRef = B4BA1A411F7505A600EDD935 /* CoreDataManager.m */; };
 		B4BA1A471F75063000EDD935 /* NoteDAO.m in Sources */ = {isa = PBXBuildFile; fileRef = B4BA1A461F75063000EDD935 /* NoteDAO.m */; };
-		B4BA1A4C1F75066C00EDD935 /* NOTEDATA+CoreDataClass.m in Sources */ = {isa = PBXBuildFile; fileRef = B4BA1A491F75066C00EDD935 /* NOTEDATA+CoreDataClass.m */; };
-		B4BA1A4D1F75066C00EDD935 /* NOTEDATA+CoreDataProperties.m in Sources */ = {isa = PBXBuildFile; fileRef = B4BA1A4B1F75066C00EDD935 /* NOTEDATA+CoreDataProperties.m */; };
 		B4BA1A511F7506B400EDD935 /* Note.m in Sources */ = {isa = PBXBuildFile; fileRef = B4BA1A501F7506B400EDD935 /* Note.m */; };
+		B4CD91231F7891F200175462 /* RegistViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = B4CD91221F7891F200175462 /* RegistViewController.m */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		B42D74961F78D80F00CB803B /* SimpleTabBar.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = SimpleTabBar.h; sourceTree = "<group>"; };
+		B42D74971F78D80F00CB803B /* SimpleTabBar.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = SimpleTabBar.m; sourceTree = "<group>"; };
 		B48B2EDA1F75E72600C95524 /* NSNumber+Messager.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "NSNumber+Messager.h"; sourceTree = "<group>"; };
 		B48B2EDB1F75E72700C95524 /* NSNumber+Messager.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = "NSNumber+Messager.m"; sourceTree = "<group>"; };
 		B4BA1A201F75043200EDD935 /* 51WorkNote.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = 51WorkNote.app; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -38,12 +40,10 @@
 		B4BA1A411F7505A600EDD935 /* CoreDataManager.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = CoreDataManager.m; sourceTree = "<group>"; };
 		B4BA1A451F75063000EDD935 /* NoteDAO.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = NoteDAO.h; sourceTree = "<group>"; };
 		B4BA1A461F75063000EDD935 /* NoteDAO.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = NoteDAO.m; sourceTree = "<group>"; };
-		B4BA1A481F75066C00EDD935 /* NOTEDATA+CoreDataClass.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = "NOTEDATA+CoreDataClass.h"; path = "NoteDataClass/NOTEDATA+CoreDataClass.h"; sourceTree = "<group>"; };
-		B4BA1A491F75066C00EDD935 /* NOTEDATA+CoreDataClass.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = "NOTEDATA+CoreDataClass.m"; path = "NoteDataClass/NOTEDATA+CoreDataClass.m"; sourceTree = "<group>"; };
-		B4BA1A4A1F75066C00EDD935 /* NOTEDATA+CoreDataProperties.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = "NOTEDATA+CoreDataProperties.h"; path = "NoteDataClass/NOTEDATA+CoreDataProperties.h"; sourceTree = "<group>"; };
-		B4BA1A4B1F75066C00EDD935 /* NOTEDATA+CoreDataProperties.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = "NOTEDATA+CoreDataProperties.m"; path = "NoteDataClass/NOTEDATA+CoreDataProperties.m"; sourceTree = "<group>"; };
 		B4BA1A4F1F7506B400EDD935 /* Note.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = Note.h; path = NoteDataClass/Note.h; sourceTree = "<group>"; };
 		B4BA1A501F7506B400EDD935 /* Note.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = Note.m; path = NoteDataClass/Note.m; sourceTree = "<group>"; };
+		B4CD91211F7891F200175462 /* RegistViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = RegistViewController.h; path = Views/RegistViewController.h; sourceTree = "<group>"; };
+		B4CD91221F7891F200175462 /* RegistViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; name = RegistViewController.m; path = Views/RegistViewController.m; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -62,6 +62,8 @@
 			children = (
 				B48B2EDA1F75E72600C95524 /* NSNumber+Messager.h */,
 				B48B2EDB1F75E72700C95524 /* NSNumber+Messager.m */,
+				B42D74961F78D80F00CB803B /* SimpleTabBar.h */,
+				B42D74971F78D80F00CB803B /* SimpleTabBar.m */,
 			);
 			name = Category;
 			sourceTree = "<group>";
@@ -113,6 +115,8 @@
 			children = (
 				B4BA1A3D1F7504E400EDD935 /* MainViewController.h */,
 				B4BA1A3E1F7504E400EDD935 /* MainViewController.m */,
+				B4CD91211F7891F200175462 /* RegistViewController.h */,
+				B4CD91221F7891F200175462 /* RegistViewController.m */,
 			);
 			name = Views;
 			sourceTree = "<group>";
@@ -131,10 +135,6 @@
 		B4BA1A4E1F75068200EDD935 /* NoteDataClass */ = {
 			isa = PBXGroup;
 			children = (
-				B4BA1A481F75066C00EDD935 /* NOTEDATA+CoreDataClass.h */,
-				B4BA1A491F75066C00EDD935 /* NOTEDATA+CoreDataClass.m */,
-				B4BA1A4A1F75066C00EDD935 /* NOTEDATA+CoreDataProperties.h */,
-				B4BA1A4B1F75066C00EDD935 /* NOTEDATA+CoreDataProperties.m */,
 				B4BA1A4F1F7506B400EDD935 /* Note.h */,
 				B4BA1A501F7506B400EDD935 /* Note.m */,
 			);
@@ -212,16 +212,16 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				B4CD91231F7891F200175462 /* RegistViewController.m in Sources */,
 				B4BA1A511F7506B400EDD935 /* Note.m in Sources */,
 				B4BA1A311F75043200EDD935 /* _1WorkNote.xcdatamodeld in Sources */,
 				B4BA1A281F75043200EDD935 /* AppDelegate.m in Sources */,
 				B4BA1A421F7505A600EDD935 /* CoreDataManager.m in Sources */,
-				B4BA1A4D1F75066C00EDD935 /* NOTEDATA+CoreDataProperties.m in Sources */,
+				B42D74981F78D80F00CB803B /* SimpleTabBar.m in Sources */,
 				B4BA1A251F75043200EDD935 /* main.m in Sources */,
 				B4BA1A471F75063000EDD935 /* NoteDAO.m in Sources */,
 				B4BA1A3F1F7504E400EDD935 /* MainViewController.m in Sources */,
 				B48B2EDC1F75E72700C95524 /* NSNumber+Messager.m in Sources */,
-				B4BA1A4C1F75066C00EDD935 /* NOTEDATA+CoreDataClass.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

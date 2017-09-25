@@ -14,7 +14,9 @@
 
 @property(atomic,strong) NSMutableArray *severNotes;
 @property(atomic,strong) NSMutableArray *localNotes;
+@property(atomic,strong) NSMutableArray *IDStorage;
 @property(nonatomic,copy) NSString *UserID;
+
 
 + (NoteDAO *)sharedNoteDao;
 
@@ -30,4 +32,5 @@
 
 - (void)modifyNote:(Note *)targetNote;
 
+- (NSNumber *)getAllIDs;
 @end
