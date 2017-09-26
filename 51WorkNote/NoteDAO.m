@@ -41,7 +41,7 @@ static NoteDAO * sharedSingleton;
 - (void)downLoadNoteFromServer {
     NSString *hostUrlStr = HOSTNAME;
     NSURL *hostUrl = [NSURL URLWithString:hostUrlStr];
-    NSString *requestBodyStr = [NSString stringWithFormat:@"email=%@&type=JSON&action=query",self.UserID];
+    NSString *requestBodyStr = [NSString stringWithFormat:@"email=%@&type=JSON&action=query",self.UserID.username];
     NSData *requestBody = [requestBodyStr dataUsingEncoding:NSUTF8StringEncoding];
     
     NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:hostUrl];
@@ -81,7 +81,7 @@ static NoteDAO * sharedSingleton;
 - (void)uploadNotesToServer:(Note *)note {
     NSString *hostUrlStr = HOSTNAME;
     NSURL *hostUrl = [NSURL URLWithString:hostUrlStr];
-    NSString *requestBodyStr = [NSString stringWithFormat:@"email=%@&type=JSON&action=add&date=%@&content=%@",self.UserID,note.timestamp,note.content];
+    NSString *requestBodyStr = [NSString stringWithFormat:@"email=%@&type=JSON&action=add&date=%@&content=%@",self.UserID.username,note.timestamp,note.content];
     NSData *requestBody = [requestBodyStr dataUsingEncoding:NSUTF8StringEncoding];
     
     NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:hostUrl];
@@ -103,7 +103,7 @@ static NoteDAO * sharedSingleton;
 - (void)deleteNotesFromServer:(Note *)note {
     NSString *hostUrlStr = HOSTNAME;
     NSURL *hostUrl = [NSURL URLWithString:hostUrlStr];
-    NSString *requestBodyStr = [NSString stringWithFormat:@"email=%@&type=JSON&action=remove&id=%@",self.UserID,note.noteid];
+    NSString *requestBodyStr = [NSString stringWithFormat:@"email=%@&type=JSON&action=remove&id=%@",self.UserID.username,note.noteid];
     NSData *requestBody = [requestBodyStr dataUsingEncoding:NSUTF8StringEncoding];
     
     NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:hostUrl];
@@ -125,7 +125,7 @@ static NoteDAO * sharedSingleton;
 - (void)modifyNotesFromServer:(Note *)note {
     NSString *hostURLStr = HOSTNAME;
     NSURL *hostURL = [NSURL URLWithString:hostURLStr];
-    NSString *requestBodyStr = [NSString stringWithFormat:@"email=%@&type=JSON&action=modify&date=%@&content=%@&id=%@",self.UserID,note.timestamp,note.content,note.noteid];
+    NSString *requestBodyStr = [NSString stringWithFormat:@"email=%@&type=JSON&action=modify&date=%@&content=%@&id=%@",self.UserID.username,note.timestamp,note.content,note.noteid];
     NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:hostURL];
     [request setHTTPBody:[requestBodyStr dataUsingEncoding:NSUTF8StringEncoding]];
     [request setHTTPMethod:@"POST"];
@@ -235,7 +235,7 @@ static NoteDAO * sharedSingleton;
 }
 
 #pragma mark - IDmanagement
-- (NSNumber *)getAllIDs {
+- (void)getAllIDs {
     NSManagedObjectContext *context = [self managedObjectContext];
     NSEntityDescription *entityDesctiption = [NSEntityDescription entityForName:@"USERFILE" inManagedObjectContext:context];
     NSFetchRequest *fetchReq = [[NSFetchRequest alloc]init];
@@ -252,23 +252,64 @@ static NoteDAO * sharedSingleton;
     }else{
         for(USERFILE *userData in listData) {
             [self.IDStorage addObject:userData];
-            if(userData.issigned == true && userData.valid <= VALIDTIME) {
-                self.UserID = userData.username;
-                return [NSNumber numberWithInt:1];
+            }
+        }
+}
+
+- (BOOL)fliterQualifiedIDs {
+    if(self.IDStorage.count > 0) {
+        for(USERFILE *sample in self.IDStorage) {
+            if(sample.valid <= VALIDTIME){
+                if(sample.issigned == true) {
+                    sample.valid += 1;
+                    [self modifyUserFile:sample];
+                    NSLog(@"Recent signed in ID found.");
+                    return true;
+                }
+            }else {
+                sample.valid = 0;
+                sample.issigned = false;
+                [self modifyUserFile:sample];
             }
         }
     }
-    return [NSNumber numberWithInt:0];
+    return false;
 }
 
-- (void)registUserID:(USERFILE *)userID {
+- (void)registUserIDwithName:(NSString *)userName
+                 AndPassword:(NSString *)passWord
+                    AndValid:(int)valid
+                 AndIssigned:(BOOL)issigned {
     NSManagedObjectContext *context = [self managedObjectContext];
     USERFILE *newUser = [NSEntityDescription insertNewObjectForEntityForName:@"USERFILE" inManagedObjectContext:context];
-    newUser.username = userID.username;
-    newUser.password = userID.password;
-    newUser.valid = userID.valid;
-    newUser.issigned = userID.issigned;
+    newUser.username = userName;
+    newUser.password = passWord;
+    newUser.valid = valid;
+    newUser.issigned = issigned;
     [self saveContext];
+}
+
+- (void)modifyUserFile:(USERFILE *)userFile {
+    NSManagedObjectContext *context = [self managedObjectContext];
+    NSEntityDescription *entityDes = [NSEntityDescription entityForName:@"USERFILE" inManagedObjectContext:context];
+    NSFetchRequest *fetch = [[NSFetchRequest alloc]init];
+    fetch.entity = entityDes;
+    NSPredicate *predicate = [NSPredicate predicateWithFormat:@"username = %@",userFile.username];
+    [fetch setPredicate:predicate];
+    NSError *error = nil;
+    NSArray *listData = [context executeFetchRequest:fetch error:&error];
+    if(error) {
+        NSLog(@"Error : %@",error.localizedDescription);
+    }else if(listData.count != 0) {
+        USERFILE *target = listData.lastObject;
+        target.username = userFile.username;
+        target.password = userFile.password;
+        target.valid = userFile.valid;
+        target.issigned = userFile.issigned;
+        [self saveContext];
+    }else {
+        NSLog(@"Do not find target ID");
+    }
 }
 
 

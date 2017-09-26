@@ -64,8 +64,8 @@
 
 - (void)setUpNoteDataAssistObject {
     self.dataCenter = [NoteDAO sharedNoteDao];
-    NSNumber *result = [_dataCenter getAllIDs];
-    if(result.intValue == 0) {
+    [_dataCenter getAllIDs];
+    if(![_dataCenter fliterQualifiedIDs]) {
         NSLog(@"No singed in ID aquired, entering regist view");
         RegistViewController *reg = [[RegistViewController alloc]init];
         [self presentViewController:reg animated:true completion:nil];
@@ -79,10 +79,10 @@
     screenWidth = [UIScreen mainScreen].bounds.size.width;
     screenHeight = [UIScreen mainScreen].bounds.size.height;
     topView = NAVBAR + STATEBAR;
+    [self configureTableView];
     [self configureSliderView];
     [self configureTopButtons];
     [self configureLowTab];
-    [self configureTableView];
 }
 
 - (void)configureLowTab {
