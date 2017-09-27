@@ -13,6 +13,7 @@
 #pragma mark - Importations
 #import "NSNumber+Messager.h"
 #import "Note.h"
+#import "UserID.h"
 #import "NoteDAO.h"
 #import "MainViewController.h"
 #import "NOTEDATA+CoreDataClass.h"
@@ -41,7 +42,7 @@ static NoteDAO * sharedSingleton;
 - (void)downLoadNoteFromServer {
     NSString *hostUrlStr = HOSTNAME;
     NSURL *hostUrl = [NSURL URLWithString:hostUrlStr];
-    NSString *requestBodyStr = [NSString stringWithFormat:@"email=%@&type=JSON&action=query",self.UserID.username];
+    NSString *requestBodyStr = [NSString stringWithFormat:@"email=%@&type=JSON&action=query",_currentID.username];
     NSData *requestBody = [requestBodyStr dataUsingEncoding:NSUTF8StringEncoding];
     
     NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:hostUrl];
@@ -81,7 +82,7 @@ static NoteDAO * sharedSingleton;
 - (void)uploadNotesToServer:(Note *)note {
     NSString *hostUrlStr = HOSTNAME;
     NSURL *hostUrl = [NSURL URLWithString:hostUrlStr];
-    NSString *requestBodyStr = [NSString stringWithFormat:@"email=%@&type=JSON&action=add&date=%@&content=%@",self.UserID.username,note.timestamp,note.content];
+    NSString *requestBodyStr = [NSString stringWithFormat:@"email=%@&type=JSON&action=add&date=%@&content=%@",_currentID.username,note.timestamp,note.content];
     NSData *requestBody = [requestBodyStr dataUsingEncoding:NSUTF8StringEncoding];
     
     NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:hostUrl];
@@ -103,7 +104,7 @@ static NoteDAO * sharedSingleton;
 - (void)deleteNotesFromServer:(Note *)note {
     NSString *hostUrlStr = HOSTNAME;
     NSURL *hostUrl = [NSURL URLWithString:hostUrlStr];
-    NSString *requestBodyStr = [NSString stringWithFormat:@"email=%@&type=JSON&action=remove&id=%@",self.UserID.username,note.noteid];
+    NSString *requestBodyStr = [NSString stringWithFormat:@"email=%@&type=JSON&action=remove&id=%@",_currentID.username,note.noteid];
     NSData *requestBody = [requestBodyStr dataUsingEncoding:NSUTF8StringEncoding];
     
     NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:hostUrl];
@@ -125,7 +126,7 @@ static NoteDAO * sharedSingleton;
 - (void)modifyNotesFromServer:(Note *)note {
     NSString *hostURLStr = HOSTNAME;
     NSURL *hostURL = [NSURL URLWithString:hostURLStr];
-    NSString *requestBodyStr = [NSString stringWithFormat:@"email=%@&type=JSON&action=modify&date=%@&content=%@&id=%@",self.UserID.username,note.timestamp,note.content,note.noteid];
+    NSString *requestBodyStr = [NSString stringWithFormat:@"email=%@&type=JSON&action=modify&date=%@&content=%@&id=%@",_currentID.username,note.timestamp,note.content,note.noteid];
     NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:hostURL];
     [request setHTTPBody:[requestBodyStr dataUsingEncoding:NSUTF8StringEncoding]];
     [request setHTTPMethod:@"POST"];
@@ -262,6 +263,7 @@ static NoteDAO * sharedSingleton;
             if(sample.valid <= VALIDTIME){
                 if(sample.issigned == true) {
                     sample.valid += 1;
+                    _currentID = [[UserID alloc]initWithName:sample.username AndPassword:sample.password AndValid:sample.valid AndIssigned:sample.issigned];
                     [self modifyUserFile:sample];
                     NSLog(@"Recent signed in ID found.");
                     return true;
@@ -286,6 +288,7 @@ static NoteDAO * sharedSingleton;
     newUser.password = passWord;
     newUser.valid = valid;
     newUser.issigned = issigned;
+    _currentID = [[UserID alloc]initWithName:newUser.username AndPassword:newUser.password AndValid:newUser.valid AndIssigned:newUser.issigned];
     [self saveContext];
 }
 

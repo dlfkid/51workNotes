@@ -9,6 +9,7 @@
 /* Begin PBXBuildFile section */
 		B42D74981F78D80F00CB803B /* SimpleTabBar.m in Sources */ = {isa = PBXBuildFile; fileRef = B42D74971F78D80F00CB803B /* SimpleTabBar.m */; };
 		B48B2EDC1F75E72700C95524 /* NSNumber+Messager.m in Sources */ = {isa = PBXBuildFile; fileRef = B48B2EDB1F75E72700C95524 /* NSNumber+Messager.m */; };
+		B48F77BA1F7B4B60005360DF /* UserID.m in Sources */ = {isa = PBXBuildFile; fileRef = B48F77B91F7B4B60005360DF /* UserID.m */; };
 		B4BA1A251F75043200EDD935 /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = B4BA1A241F75043200EDD935 /* main.m */; };
 		B4BA1A281F75043200EDD935 /* AppDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = B4BA1A271F75043200EDD935 /* AppDelegate.m */; };
 		B4BA1A311F75043200EDD935 /* _1WorkNote.xcdatamodeld in Sources */ = {isa = PBXBuildFile; fileRef = B4BA1A2F1F75043200EDD935 /* _1WorkNote.xcdatamodeld */; };
@@ -26,6 +27,8 @@
 		B42D74971F78D80F00CB803B /* SimpleTabBar.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = SimpleTabBar.m; sourceTree = "<group>"; };
 		B48B2EDA1F75E72600C95524 /* NSNumber+Messager.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "NSNumber+Messager.h"; sourceTree = "<group>"; };
 		B48B2EDB1F75E72700C95524 /* NSNumber+Messager.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = "NSNumber+Messager.m"; sourceTree = "<group>"; };
+		B48F77B81F7B4B60005360DF /* UserID.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = UserID.h; path = NoteDataClass/UserID.h; sourceTree = "<group>"; };
+		B48F77B91F7B4B60005360DF /* UserID.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; name = UserID.m; path = NoteDataClass/UserID.m; sourceTree = "<group>"; };
 		B4BA1A201F75043200EDD935 /* 51WorkNote.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = 51WorkNote.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		B4BA1A241F75043200EDD935 /* main.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = main.m; sourceTree = "<group>"; };
 		B4BA1A261F75043200EDD935 /* AppDelegate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = AppDelegate.h; sourceTree = "<group>"; };
@@ -137,6 +140,8 @@
 			children = (
 				B4BA1A4F1F7506B400EDD935 /* Note.h */,
 				B4BA1A501F7506B400EDD935 /* Note.m */,
+				B48F77B81F7B4B60005360DF /* UserID.h */,
+				B48F77B91F7B4B60005360DF /* UserID.m */,
 			);
 			name = NoteDataClass;
 			sourceTree = "<group>";
@@ -222,6 +227,7 @@
 				B4BA1A471F75063000EDD935 /* NoteDAO.m in Sources */,
 				B4BA1A3F1F7504E400EDD935 /* MainViewController.m in Sources */,
 				B48B2EDC1F75E72700C95524 /* NSNumber+Messager.m in Sources */,
+				B48F77BA1F7B4B60005360DF /* UserID.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

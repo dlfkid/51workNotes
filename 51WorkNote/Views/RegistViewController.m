@@ -17,6 +17,7 @@
 #import "RegistViewController.h"
 #import "USERFILE+CoreDataClass.h"
 #import "NoteDAO.h"
+#import "UserID.h"
 
 @interface RegistViewController ()<UITextFieldDelegate>
 
@@ -155,6 +156,7 @@
             sample.valid += 1;
             sample.issigned = true;
             [dao modifyUserFile:sample];
+            dao.currentID = [[UserID alloc]initWithName:sample.username AndPassword:sample.password AndValid:sample.valid AndIssigned:sample.issigned];
             return true;
         }
     }

@@ -11,12 +11,13 @@
 
 @class Note;
 @class USERFILE;
+@class UserID;
 @interface NoteDAO : CoreDataManager<NSURLSessionDelegate>
 
 @property(atomic,strong) NSMutableArray *severNotes;
 @property(atomic,strong) NSMutableArray *localNotes;
 @property(atomic,strong) NSMutableArray *IDStorage;
-@property(nonatomic,copy) USERFILE *UserID;
+@property(nonatomic,strong) UserID *currentID;
 
 
 + (NoteDAO *)sharedNoteDao;

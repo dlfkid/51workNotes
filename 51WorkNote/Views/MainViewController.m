@@ -12,8 +12,10 @@
 #import "MainViewController.h"
 #import "RegistViewController.h"
 #import "SimpleTabBar.h"
+#import "USERFILE+CoreDataClass.h"
 #import "NoteDAO.h"
 #import "Note.h"
+#import "UserID.h"
 
 
 
@@ -100,6 +102,10 @@
     NSLog(@"Configuring Slider View");
     self.sliderView = [[UIView alloc]initWithFrame:CGRectMake(screenWidth, NAVBAR + STATEBAR, SLIDERWIDTH, screenHeight)];
     [self.sliderView setBackgroundColor:[UIColor lightGrayColor]];
+    UILabel *userLabel = [[UILabel alloc]initWithFrame:CGRectMake(0, topView, SLIDERWIDTH, NAVBAR)];
+    userLabel.backgroundColor = [UIColor whiteColor];
+    userLabel.text = [NoteDAO sharedNoteDao].currentID.username;
+    [self.sliderView addSubview:userLabel];
     [self.view addSubview:_sliderView];
 }
 
@@ -107,9 +113,11 @@
     NSLog(@"configuring top view buttons");
     UIImage *rightButtonIcon = [UIImage imageNamed:@"icons8-User-48"];
     self.navigationItem.rightBarButtonItem = [[UIBarButtonItem alloc]initWithImage:rightButtonIcon style:UIBarButtonItemStylePlain target:self action:@selector(rightBarButtonAction:)];
-    self.navigationItem.leftBarButtonItem = [[UIBarButtonItem alloc]initWithTitle:@"Any" style:UIBarButtonItemStylePlain target:self action:@selector(leftBarButtonAction:)];
+    UIImage *leftButtonIcon = [UIImage imageNamed:@"icons8-Export-26"];
+    self.navigationItem.leftBarButtonItem = [[UIBarButtonItem alloc]initWithImage: leftButtonIcon style:UIBarButtonItemStylePlain target:self action:@selector(leftBarButtonAction:)];
 }
 
+//用户界面按钮
 - (void)rightBarButtonAction:(id)sender {
     [UIView beginAnimations:nil context:nil];
     [UIView setAnimationCurve:UIViewAnimationCurveEaseIn];
@@ -122,9 +130,17 @@
     }
     [UIView commitAnimations];
 }
-
+//退出登录按钮
 - (void)leftBarButtonAction:(id)sender {
-    
+    NoteDAO *dao = [NoteDAO sharedNoteDao];
+    NSArray *IDList = [dao IDStorage];
+    for(USERFILE *currentID in IDList) {
+        currentID.issigned = false;
+        [dao modifyUserFile:currentID];
+        dao.currentID = nil;
+    }
+    RegistViewController *reg = [[RegistViewController alloc]init];
+    [self presentViewController:reg animated:true completion:nil];
 }
 
 - (void)configureTableView {
