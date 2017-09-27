@@ -8,7 +8,7 @@
 
 #pragma mark - Definitions
 #define HOSTNAME @"http://www.51work6.com/service/mynotes/WebService.php"
-#define VALIDTIME 3
+#define VALIDTIME 10
 
 #pragma mark - Importations
 #import "NSNumber+Messager.h"

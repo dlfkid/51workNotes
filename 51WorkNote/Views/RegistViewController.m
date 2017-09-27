@@ -56,6 +56,7 @@
 #pragma mark - UIBuild
 
 - (void)UIBuild {
+    [self.navigationController.navigationBar setTranslucent:true];
     screenWidth = [UIScreen mainScreen].bounds.size.width;
     screenHeight = [UIScreen mainScreen].bounds.size.height;
     topView = NAVBAR + STATEBAR;
@@ -185,6 +186,18 @@
         [alert addAction:warning];
         [self presentViewController:alert animated:true completion:nil];
         return false;
+    }
+    //检测是否重复注册已有ID
+    NSArray *idList = [[NoteDAO sharedNoteDao] IDStorage];
+    for(USERFILE *sample in idList) {
+        if([sample.username isEqualToString:_usernameField.text]) {
+            NSLog(@"ID conflict");
+            UIAlertController *alert = [UIAlertController alertControllerWithTitle:@"Warning" message:@"This ID was already registed" preferredStyle:UIAlertControllerStyleAlert];
+            UIAlertAction *warning = [UIAlertAction actionWithTitle:@"OK" style:UIAlertActionStyleDefault handler:nil];
+            [alert addAction:warning];
+            [self presentViewController:alert animated:true completion:nil];
+            return false;
+        }
     }
     NoteDAO *dao = [NoteDAO sharedNoteDao];
     [dao registUserIDwithName:_usernameField.text AndPassword:_passwordField.text AndValid:1 AndIssigned:true];

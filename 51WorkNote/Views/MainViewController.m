@@ -8,9 +8,12 @@
 #define STATEBAR 20
 #define NAVBAR 44
 #define SLIDERWIDTH 100
+#define BLUREFFECT 666
+#define ADDVIEWHEIGHT 200
 
 #import "MainViewController.h"
 #import "RegistViewController.h"
+#import "AddViewController.h"
 #import "SimpleTabBar.h"
 #import "USERFILE+CoreDataClass.h"
 #import "NoteDAO.h"
@@ -19,7 +22,7 @@
 
 
 
-@interface MainViewController ()<UITableViewDelegate,UITableViewDataSource,UIScrollViewDelegate,SimpleTabBarDelegate>
+@interface MainViewController ()<UITableViewDelegate,UITableViewDataSource,UIScrollViewDelegate,SimpleTabBarDelegate,UITextViewDelegate>
 
 {
     CGFloat screenWidth;
@@ -32,6 +35,8 @@
 @property(nonatomic,strong) NSMutableArray *notesAlive;
 @property(nonatomic,strong) UIView *sliderView;
 @property(nonatomic,strong) SimpleTabBar *lowTab;
+@property(nonatomic,strong) UITextView *input;
+@property(nonatomic,strong) UILabel *userInfo;
 
 @end
 
@@ -46,6 +51,9 @@
 
 - (void)viewWillAppear:(BOOL)animated {
     self.title = @"51WorkNote";
+    if(self.userInfo) {
+        _userInfo.text = [NoteDAO sharedNoteDao].currentID.username;
+    }
 }
 
 - (void)didReceiveMemoryWarning {
@@ -87,6 +95,12 @@
     [self configureLowTab];
 }
 
+- (void)drawColorRect {
+    UIView *colorRect = [[UIView alloc]initWithFrame:CGRectMake(100, 100, 300, 150)];
+    colorRect.backgroundColor = [UIColor redColor];
+    [self.view addSubview:colorRect];
+}
+
 - (void)configureLowTab {
     NSLog(@"configuring low bar");
     self.lowTab = [[SimpleTabBar alloc]initWithFrame:CGRectMake(0, screenHeight - 45, screenWidth, 45)];
@@ -94,8 +108,65 @@
     [self.view addSubview:_lowTab];
 }
 
+- (void)configureAddView {
+    NSLog(@"configuring add view");
+    CGFloat addViewWidth = screenWidth - 40;
+    //设置毛玻璃背景
+    UIBlurEffect *blur = [UIBlurEffect effectWithStyle:UIBlurEffectStyleLight];
+    UIVisualEffectView *effect = [[UIVisualEffectView alloc]initWithEffect:blur];
+    effect.frame = CGRectMake(0, screenHeight, screenWidth, screenHeight);
+    effect.tag = BLUREFFECT;
+    [self.view addSubview:effect];
+    
+    //设置添加框白板
+    UIView *whiteView = [[UIView alloc]initWithFrame:CGRectMake((screenWidth - addViewWidth)/2, screenHeight - ADDVIEWHEIGHT, addViewWidth, ADDVIEWHEIGHT)];
+    whiteView.backgroundColor = [UIColor whiteColor];
+    whiteView.layer.cornerRadius = 10;
+     [effect.contentView addSubview:whiteView];
+    
+    //设置添加文本框
+    UITextView *newInput = [[UITextView alloc]initWithFrame:CGRectMake(50, 50, addViewWidth - 100, ADDVIEWHEIGHT - 50)];
+    newInput.font = [UIFont systemFontOfSize:18];
+    [newInput setKeyboardType:UIKeyboardTypeASCIICapable];
+    [whiteView addSubview:newInput];
+    newInput.delegate = self;
+    _input = newInput;
+    
+    //设置取消按钮
+    UIImage *backIcon = [UIImage imageNamed:@"icons8-Cancel-50"];
+    UIButton *backButton = [[UIButton alloc]initWithFrame:CGRectMake(addViewWidth - 50, 0, 50, 50)];
+    [backButton setImage:backIcon forState:UIControlStateNormal];
+    [backButton addTarget:self action:@selector(cancelButtonAction:) forControlEvents:UIControlEventTouchDown];
+    whiteView.tag = 101;
+    [whiteView addSubview:backButton];
+    
+    //添加提示信息
+    UILabel *hint = [[UILabel alloc]initWithFrame:CGRectMake((screenWidth - addViewWidth)/2, topView + 100, addViewWidth, 300)];
+    [hint setText: @"Input any thing \nyou wanna take note"];
+    hint.textAlignment = NSTextAlignmentCenter;
+    hint.font = [UIFont systemFontOfSize:24];
+    hint.numberOfLines = 0;
+    [effect.contentView addSubview:hint];
+}
+
+- (void)cancelButtonAction:(UIButton *)sender {
+    UIView *view = [self.view viewWithTag:BLUREFFECT];
+    [UIView beginAnimations:nil context:nil];
+    [UIView setAnimationCurve:UIViewAnimationCurveEaseIn];
+    [view setFrame:CGRectMake(0,screenHeight, screenWidth, screenHeight)];
+    [UIView commitAnimations];
+    _input = nil;
+    [view removeFromSuperview];
+}
+
 - (void)simpleTabBarDidClickedPlusButton:(SimpleTabBar *)simpleBar {
     NSLog(@"Add an new note.");
+    [self configureAddView];
+    UIVisualEffectView *view = [self.view viewWithTag:BLUREFFECT];
+    [UIView beginAnimations:nil context:nil];
+    [UIView setAnimationCurve:UIViewAnimationCurveEaseIn];
+    [view setFrame:CGRectMake(0, 0, screenWidth, screenHeight)];
+    [UIView commitAnimations];
 }
 
 - (void)configureSliderView {
@@ -103,6 +174,7 @@
     self.sliderView = [[UIView alloc]initWithFrame:CGRectMake(screenWidth, NAVBAR + STATEBAR, SLIDERWIDTH, screenHeight)];
     [self.sliderView setBackgroundColor:[UIColor lightGrayColor]];
     UILabel *userLabel = [[UILabel alloc]initWithFrame:CGRectMake(0, topView, SLIDERWIDTH, NAVBAR)];
+    _userInfo = userLabel;
     userLabel.backgroundColor = [UIColor whiteColor];
     userLabel.text = [NoteDAO sharedNoteDao].currentID.username;
     [self.sliderView addSubview:userLabel];
@@ -129,6 +201,7 @@
         NSLog(@"Slider View has bugs");
     }
     [UIView commitAnimations];
+    //[self drawColorRect];
 }
 //退出登录按钮
 - (void)leftBarButtonAction:(id)sender {
@@ -182,6 +255,20 @@
     if(decelerate) {
         [self.lowTab setHidden:false];
     }
+}
+
+#pragma mark - textViewDelegate
+
+- (void)textViewDidChange:(UITextView *)textView {
+    static CGFloat maxHeight = ADDVIEWHEIGHT;
+    CGRect frame = textView.frame;
+    CGSize constraintSize = CGSizeMake(frame.size.width, maxHeight);
+    CGSize size = [textView sizeThatFits:constraintSize];
+    if(size.height < maxHeight) {
+        size.height = maxHeight;
+    }
+    textView.scrollEnabled = false;
+    textView.frame = CGRectMake(frame.origin.x, frame.origin.y,frame.size.width,size.height);
 }
 
 @end
