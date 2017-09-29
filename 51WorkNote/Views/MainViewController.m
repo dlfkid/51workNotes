@@ -13,7 +13,6 @@
 
 #import "MainViewController.h"
 #import "RegistViewController.h"
-#import "AddViewController.h"
 #import "SimpleTabBar.h"
 #import "USERFILE+CoreDataClass.h"
 #import "NoteDAO.h"
@@ -44,15 +43,18 @@
 
 - (void)viewDidLoad {
     [super viewDidLoad];
-    [self setUpNoteDataAssistObject];
     [self UIBuild];
     // Do any additional setup after loading the view.
 }
 
 - (void)viewWillAppear:(BOOL)animated {
     self.title = @"51WorkNote";
+    [self setUpNoteDataAssistObject];
     if(self.userInfo) {
         _userInfo.text = [NoteDAO sharedNoteDao].currentID.username;
+    }
+    if(self.tableView) {
+        [_tableView reloadData];
     }
 }
 
@@ -73,6 +75,7 @@
 #pragma mark - LoadDataBase
 
 - (void)setUpNoteDataAssistObject {
+    self.notesAlive = [[NSMutableArray alloc]init];
     self.dataCenter = [NoteDAO sharedNoteDao];
     [_dataCenter getAllIDs];
     if(![_dataCenter fliterQualifiedIDs]) {
@@ -80,6 +83,7 @@
         RegistViewController *reg = [[RegistViewController alloc]init];
         [self presentViewController:reg animated:true completion:nil];
     }
+    [_notesAlive addObjectsFromArray:[_dataCenter loadAllNote]];
 }
 
 #pragma mark - UIBuild
@@ -119,18 +123,20 @@
     [self.view addSubview:effect];
     
     //设置添加框白板
-    UIView *whiteView = [[UIView alloc]initWithFrame:CGRectMake((screenWidth - addViewWidth)/2, screenHeight - ADDVIEWHEIGHT, addViewWidth, ADDVIEWHEIGHT)];
+    UIView *whiteView = [[UIView alloc]initWithFrame:CGRectMake((screenWidth - addViewWidth)/2, topView, addViewWidth, ADDVIEWHEIGHT)];
     whiteView.backgroundColor = [UIColor whiteColor];
     whiteView.layer.cornerRadius = 10;
+    whiteView.layer.borderWidth = 1;
+    whiteView.tag = 102;
      [effect.contentView addSubview:whiteView];
     
     //设置添加文本框
-    UITextView *newInput = [[UITextView alloc]initWithFrame:CGRectMake(50, 50, addViewWidth - 100, ADDVIEWHEIGHT - 50)];
+    UITextView *newInput = [[UITextView alloc]initWithFrame:CGRectMake(50, 0, addViewWidth - 100, ADDVIEWHEIGHT)];
     newInput.font = [UIFont systemFontOfSize:18];
     [newInput setKeyboardType:UIKeyboardTypeASCIICapable];
     [whiteView addSubview:newInput];
-    newInput.delegate = self;
     _input = newInput;
+    _input.delegate = self;
     
     //设置取消按钮
     UIImage *backIcon = [UIImage imageNamed:@"icons8-Cancel-50"];
@@ -140,13 +146,36 @@
     whiteView.tag = 101;
     [whiteView addSubview:backButton];
     
+    //设置添加按钮
+    UIImage *confirmIcon = [UIImage imageNamed:@"icons8-Checked-50"];
+    UIButton *confirmButton = [[UIButton alloc]initWithFrame:CGRectMake(addViewWidth - 50, ADDVIEWHEIGHT - 50, 50, 50)];
+    [confirmButton setImage:confirmIcon forState:UIControlStateNormal];
+    [confirmButton addTarget:self action:@selector(confirmButtonAction:) forControlEvents:UIControlEventTouchDown];
+    [whiteView addSubview:confirmButton];
+    
     //添加提示信息
     UILabel *hint = [[UILabel alloc]initWithFrame:CGRectMake((screenWidth - addViewWidth)/2, topView + 100, addViewWidth, 300)];
     [hint setText: @"Input any thing \nyou wanna take note"];
     hint.textAlignment = NSTextAlignmentCenter;
     hint.font = [UIFont systemFontOfSize:24];
-    hint.numberOfLines = 0;
+    hint.numberOfLines = 10;
     [effect.contentView addSubview:hint];
+}
+
+- (void)confirmButtonAction:(UIButton *)sender {
+    int noteID = (int)self.notesAlive.count + 1;
+    NSString *currentUser = [NoteDAO sharedNoteDao].currentID.username;
+    Note *newNote = [Note noteWithCurrentTimeStamp:noteID userid:currentUser content:_input.text];
+    [[NoteDAO sharedNoteDao] addANote:newNote];
+    [_notesAlive addObject:newNote];
+    [self.tableView reloadData];
+    UIView *view = [self.view viewWithTag:BLUREFFECT];
+    [UIView beginAnimations:nil context:nil];
+    [UIView setAnimationCurve:UIViewAnimationCurveEaseIn];
+    [view setFrame:CGRectMake(0,screenHeight, screenWidth, screenHeight)];
+    [UIView commitAnimations];
+    _input = nil;
+    [view removeFromSuperview];
 }
 
 - (void)cancelButtonAction:(UIButton *)sender {
@@ -177,6 +206,10 @@
     _userInfo = userLabel;
     userLabel.backgroundColor = [UIColor whiteColor];
     userLabel.text = [NoteDAO sharedNoteDao].currentID.username;
+    _sliderView.layer.shadowColor = [UIColor blackColor].CGColor;
+    _sliderView.layer.shadowOpacity = 0.8f;
+    _sliderView.layer.shadowRadius = 4.f;
+    _sliderView.layer.shadowOffset = CGSizeMake(1, 1);
     [self.sliderView addSubview:userLabel];
     [self.view addSubview:_sliderView];
 }
@@ -241,6 +274,7 @@
     cell.textLabel.text = targetNote.content;
     cell.detailTextLabel.text = targetNote.timestamp;
     [cell setAccessoryType:UITableViewCellAccessoryDetailButton];
+    
     [cell setHighlighted:false];
     return cell;
 }
@@ -259,16 +293,21 @@
 
 #pragma mark - textViewDelegate
 
-- (void)textViewDidChange:(UITextView *)textView {
-    static CGFloat maxHeight = ADDVIEWHEIGHT;
-    CGRect frame = textView.frame;
-    CGSize constraintSize = CGSizeMake(frame.size.width, maxHeight);
-    CGSize size = [textView sizeThatFits:constraintSize];
-    if(size.height < maxHeight) {
-        size.height = maxHeight;
-    }
-    textView.scrollEnabled = false;
-    textView.frame = CGRectMake(frame.origin.x, frame.origin.y,frame.size.width,size.height);
+//- (void)textViewDidChange:(UITextView *)textView {
+//    NSLog(@"Text View did change");
+//    static CGFloat maxHeight = ADDVIEWHEIGHT;
+//    CGRect frame = textView.frame;
+//    CGSize constraintSize = CGSizeMake(frame.size.width, maxHeight);
+//    CGSize size = [textView sizeThatFits:constraintSize];
+//    if(size.height < maxHeight) {
+//        size.height = maxHeight;
+//    }
+//    textView.scrollEnabled = false;
+//    textView.frame = CGRectMake(frame.origin.x, frame.origin.y,frame.size.width,size.height);
+//}
+
+- (void)touchesBegan:(NSSet<UITouch *> *)touches withEvent:(UIEvent *)event {
+    [_input endEditing:true];
 }
 
 @end

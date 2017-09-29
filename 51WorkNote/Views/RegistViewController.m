@@ -68,6 +68,8 @@
 - (void)configureLoginView {
     self.usernameField = [[UITextField alloc]init];
     self.passwordField = [[UITextField alloc]init];
+    _usernameField.delegate = self;
+    _passwordField.delegate = self;
     UILabel *labelUser = [[UILabel alloc]initWithFrame:CGRectMake((screenWidth - TEXTFIELDWIDTH - LABELWIDTH)/2,  topView + 100,LABELWIDTH, TEXTFIELDHEIGHT)];
     UILabel *labelPass = [[UILabel alloc]initWithFrame:CGRectMake(labelUser.frame.origin.x, labelUser.frame.origin.y + TEXTFIELDHEIGHT + 20, LABELWIDTH, TEXTFIELDHEIGHT)];
     [self.usernameField setFrame:CGRectMake(labelUser.frame.origin.x + LABELWIDTH, labelUser.frame.origin.y, TEXTFIELDWIDTH, TEXTFIELDHEIGHT)];
@@ -204,7 +206,20 @@
     return true;
 }
 
+#pragma mark - textFieldDelegate
+
+- (void)touchesBegan:(NSSet<UITouch *> *)touches withEvent:(UIEvent *)event {
+    [_usernameField endEditing:true];
+    [_passwordField endEditing:true];
+}
+
+- (BOOL)textFieldShouldReturn:(UITextField *)textField {
+    [textField resignFirstResponder];
+    return true;
+}
+
 /*
+ 
 #pragma mark - Navigation
 
 // In a storyboard-based application, you will often want to do a little preparation before navigation

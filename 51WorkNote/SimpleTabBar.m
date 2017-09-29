@@ -15,7 +15,7 @@
     if(self) {
         // 添加一个按钮到tabbar中
         UIButton *plusBtn = [[UIButton alloc] init];
-        [plusBtn setImage:[UIImage imageNamed:@"icons8-Plus-50"] forState:UIControlStateNormal];
+        [plusBtn setImage:[UIImage imageNamed:@"icons8-Plus-40"] forState:UIControlStateNormal];
         CGRect temp = plusBtn.frame;
         temp.size=plusBtn.currentImage.size;
         CGFloat imageWidth = temp.size.width;

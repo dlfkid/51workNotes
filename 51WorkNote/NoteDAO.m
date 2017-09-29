@@ -180,7 +180,8 @@ static NoteDAO * sharedSingleton;
     }else{
         for(NOTEDATA *noteData in listData) {
             Note *newNote = [[Note alloc]initWithUserid:noteData.userid AndNoteid:noteData.noteid AndContent:noteData.content AndDate:noteData.timestamp];
-            [self.localNotes addObject:newNote];
+            if([newNote.userid isEqualToString:_currentID.username])
+                [self.localNotes addObject:newNote];
         }
     }
 }
@@ -192,6 +193,7 @@ static NoteDAO * sharedSingleton;
     noteData.noteid = [newNote.noteid intValue];
     noteData.content = newNote.content;
     noteData.userid = newNote.userid;
+    NSLog(@"New note added to data core");
     [self saveContext];
 }
 
