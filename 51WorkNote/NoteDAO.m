@@ -157,8 +157,14 @@ static NoteDAO * sharedSingleton;
 }
 
 - (NSMutableArray *)loadAllNote {
-    [self loadNotesFromCoreData];
+    if(_localNotes.count == 0) {
+        [self loadNotesFromCoreData];
+    }
     return _localNotes;
+}
+
+- (void)unloadAllNotes {
+    [self.localNotes removeAllObjects];
 }
 
 #pragma mark - CoreDataFunction

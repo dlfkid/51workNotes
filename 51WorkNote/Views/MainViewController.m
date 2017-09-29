@@ -13,6 +13,7 @@
 
 #import "MainViewController.h"
 #import "RegistViewController.h"
+#import "NoteDetailViewController.h"
 #import "SimpleTabBar.h"
 #import "USERFILE+CoreDataClass.h"
 #import "NoteDAO.h"
@@ -75,7 +76,6 @@
 #pragma mark - LoadDataBase
 
 - (void)setUpNoteDataAssistObject {
-    self.notesAlive = [[NSMutableArray alloc]init];
     self.dataCenter = [NoteDAO sharedNoteDao];
     [_dataCenter getAllIDs];
     if(![_dataCenter fliterQualifiedIDs]) {
@@ -83,7 +83,7 @@
         RegistViewController *reg = [[RegistViewController alloc]init];
         [self presentViewController:reg animated:true completion:nil];
     }
-    [_notesAlive addObjectsFromArray:[_dataCenter loadAllNote]];
+    _notesAlive = [_dataCenter loadAllNote];
 }
 
 #pragma mark - UIBuild
@@ -243,8 +243,9 @@
     for(USERFILE *currentID in IDList) {
         currentID.issigned = false;
         [dao modifyUserFile:currentID];
-        dao.currentID = nil;
     }
+    dao.currentID = nil;
+    [dao unloadAllNotes];
     RegistViewController *reg = [[RegistViewController alloc]init];
     [self presentViewController:reg animated:true completion:nil];
 }
@@ -268,15 +269,36 @@
     }
 }
 
+- (void)tableView:(UITableView *)tableView accessoryButtonTappedForRowWithIndexPath:(NSIndexPath *)indexPath {
+    Note *targetNote = _notesAlive[indexPath.row];
+    NoteDetailViewController *detail = [[NoteDetailViewController alloc]init];
+    detail.currentNote = targetNote;
+    [self.navigationController pushViewController:detail animated:true];
+}
+
 - (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath {
     UITableViewCell *cell = [_tableView dequeueReusableCellWithIdentifier:@"noteCell" forIndexPath:indexPath];
     Note *targetNote = _notesAlive[indexPath.row];
     cell.textLabel.text = targetNote.content;
     cell.detailTextLabel.text = targetNote.timestamp;
     [cell setAccessoryType:UITableViewCellAccessoryDetailButton];
-    
-    [cell setHighlighted:false];
+    cell.selectionStyle = UITableViewCellSelectionStyleNone;
     return cell;
+}
+
+//删除操作
+- (UITableViewCellEditingStyle)tableView:(UITableView *)tableView editingStyleForRowAtIndexPath:(NSIndexPath *)indexPath {
+    return UITableViewCellEditingStyleDelete;
+}
+
+- (void)tableView:(UITableView *)tableView commitEditingStyle:(UITableViewCellEditingStyle)editingStyle forRowAtIndexPath:(NSIndexPath *)indexPath {
+    if(editingStyle == UITableViewCellEditingStyleDelete) {
+        Note *target = _notesAlive[indexPath.row];
+        [_dataCenter removeNote:target];
+        [self.notesAlive removeObjectAtIndex:indexPath.row];
+        [self.tableView deleteRowsAtIndexPaths:@[indexPath] withRowAnimation:UITableViewRowAnimationFade];
+        [self.tableView reloadData];
+    }
 }
 
 #pragma mark - scrollViewDelegate
@@ -309,5 +331,12 @@
 - (void)touchesBegan:(NSSet<UITouch *> *)touches withEvent:(UIEvent *)event {
     [_input endEditing:true];
 }
+
+//- (void)tableView:(UITableView *)tableView didHighlightRowAtIndexPath:(NSIndexPath *)indexPath {
+//    Note *targetNote = _notesAlive[indexPath.row];
+//    NoteDetailViewController *detail = [[NoteDetailViewController alloc]init];
+//    detail.currentNote = targetNote;
+//    [self.navigationController pushViewController:detail animated:true];
+//}
 
 @end

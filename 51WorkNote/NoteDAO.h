@@ -36,6 +36,8 @@
 
 - (void)getAllIDs;
 
+- (void)unloadAllNotes;
+
 - (void)registUserIDwithName:(NSString *)userName
                  AndPassword:(NSString *)passWord
                     AndValid:(int)valid
