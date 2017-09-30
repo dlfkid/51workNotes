@@ -287,6 +287,7 @@
     Note *targetNote = _notesAlive[indexPath.row];
     NoteDetailViewController *detail = [[NoteDetailViewController alloc]init];
     detail.currentNote = targetNote;
+    [_dataCenter unloadAllNotes];
     [self.navigationController pushViewController:detail animated:true];
 }
 

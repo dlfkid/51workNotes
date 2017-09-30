@@ -13,6 +13,8 @@
 #define ADDVIEWHEIGHT 200
 
 #import "NoteDetailViewController.h"
+#import "Note.h"
+#import "NoteDAO.h"
 
 @interface NoteDetailViewController ()<UITextViewDelegate>
 
@@ -54,14 +56,23 @@
     [self configureInfoView];
 }
 
-
-- (void)leftBarbuttonAction:(UIBarButtonItem *)sender {
-    
-}
-
 - (void)rightBarButtonAction:(UIBarButtonItem *)sender {
-    if(_contentView) {
+    if([_contentView.text isEqualToString:_currentNote.content] && [_contentView.text length] == [_currentNote.content length]) {
         [_contentView resignFirstResponder];
+    }else {
+        UIAlertController *alert = [UIAlertController alertControllerWithTitle:@"Warning" message:@"Note content changed, save the note?" preferredStyle:UIAlertControllerStyleAlert];
+        //保存对笔记内容的修改
+        UIAlertAction *yes = [UIAlertAction actionWithTitle:@"Yes" style:UIAlertActionStyleDefault handler:^(UIAlertAction * _Nonnull action) {
+            _currentNote.content = _contentView.text;
+            [[NoteDAO sharedNoteDao] modifyNote:_currentNote];
+            [_contentView resignFirstResponder];
+        }];
+        UIAlertAction *no = [UIAlertAction actionWithTitle:@"No" style:UIAlertActionStyleCancel handler:nil];
+        [alert addAction:yes];
+        [alert addAction:no];
+        [self presentViewController:alert animated:true completion:^{
+            [_contentView resignFirstResponder];
+        }];
     }
 }
 

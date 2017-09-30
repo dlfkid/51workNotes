@@ -6,9 +6,10 @@
 //  Copyright © 2017年 Ivan_deng. All rights reserved.
 //
 
-#import "Note.h"
+
 #import <UIKit/UIKit.h>
 
+@class Note;
 @interface NoteDetailViewController : UIViewController
 
 @property(nonatomic,strong)Note *currentNote;

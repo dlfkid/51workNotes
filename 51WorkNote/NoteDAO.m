@@ -237,6 +237,7 @@ static NoteDAO * sharedSingleton;
         NOTEDATA *target = listData.lastObject;
         target.timestamp = targetNote.timestamp;
         target.content = targetNote.content;
+        NSLog(@"Note ID: %d modified content:%@",target.noteid,target.content);
         [self saveContext];
     }else {
         NSLog(@"Do not find target Notes");
