@@ -8,6 +8,10 @@
 
 #import <UIKit/UIKit.h>
 
+typedef void(^ReturnValue)(BOOL value);
+
 @interface RegistViewController : UIViewController
+
+- (void)copyBlockContent:(ReturnValue)returnBlock;
 
 @end

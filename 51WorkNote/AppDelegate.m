@@ -8,6 +8,8 @@
 
 #import "AppDelegate.h"
 #import "MainViewController.h"
+#import "RegistViewController.h"
+#import "NoteDAO.h"
 
 @interface AppDelegate ()
 
@@ -21,6 +23,9 @@
     [self.window makeKeyAndVisible];
     self.window.backgroundColor = [UIColor whiteColor];
     MainViewController *main = [[MainViewController alloc]init];
+    NoteDAO *dao = [NoteDAO sharedNoteDao];
+    [dao getAllIDs];
+    main.alreadySigned = [dao fliterQualifiedIDs];
     UINavigationController *navMain = [[UINavigationController alloc]initWithRootViewController:main];
     [self.window setRootViewController:navMain];
     // Override point for customization after application launch.

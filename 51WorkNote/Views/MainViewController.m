@@ -52,7 +52,7 @@
     self.title = @"51WorkNote";
     [self setUpNoteDataAssistObject];
     if(self.userInfo) {
-        _userInfo.text = [NoteDAO sharedNoteDao].currentID.username;
+        _userInfo.text = _dataCenter.currentID.username;
     }
     if(self.tableView) {
         [_tableView reloadData];
@@ -76,14 +76,17 @@
 #pragma mark - LoadDataBase
 
 - (void)setUpNoteDataAssistObject {
-    self.dataCenter = [NoteDAO sharedNoteDao];
-    [_dataCenter getAllIDs];
-    if(![_dataCenter fliterQualifiedIDs]) {
+    if(self.alreadySigned == false) {
         NSLog(@"No singed in ID aquired, entering regist view");
         RegistViewController *reg = [[RegistViewController alloc]init];
+        [reg copyBlockContent:^(BOOL value) {
+            self.alreadySigned = value;
+        }];
         [self presentViewController:reg animated:true completion:nil];
+    }else{
+        _dataCenter = [NoteDAO sharedNoteDao];
+        _notesAlive = [_dataCenter loadAllNote];
     }
-    _notesAlive = [_dataCenter loadAllNote];
 }
 
 #pragma mark - UIBuild
@@ -163,19 +166,27 @@
 }
 
 - (void)confirmButtonAction:(UIButton *)sender {
-    int noteID = (int)self.notesAlive.count + 1;
-    NSString *currentUser = [NoteDAO sharedNoteDao].currentID.username;
-    Note *newNote = [Note noteWithCurrentTimeStamp:noteID userid:currentUser content:_input.text];
-    [[NoteDAO sharedNoteDao] addANote:newNote];
-    [_notesAlive addObject:newNote];
-    [self.tableView reloadData];
-    UIView *view = [self.view viewWithTag:BLUREFFECT];
-    [UIView beginAnimations:nil context:nil];
-    [UIView setAnimationCurve:UIViewAnimationCurveEaseIn];
-    [view setFrame:CGRectMake(0,screenHeight, screenWidth, screenHeight)];
-    [UIView commitAnimations];
-    _input = nil;
-    [view removeFromSuperview];
+    if([_input.text isEqualToString:@""] || [_input.text length] == 0) {
+        NSLog(@"Added an empty content");
+        UIAlertController *alert = [UIAlertController alertControllerWithTitle:@"Warning" message:@"Do not add empty note!" preferredStyle:UIAlertControllerStyleAlert];
+        UIAlertAction *warning = [UIAlertAction actionWithTitle:@"OK" style:UIAlertActionStyleDefault handler:nil];
+        [alert addAction:warning];
+        [self presentViewController:alert animated:true completion:nil];
+    }else {
+        int noteID = (int)self.notesAlive.count + 1;
+        NSString *currentUser = _dataCenter.currentID.username;
+        Note *newNote = [Note noteWithCurrentTimeStamp:noteID userid:currentUser content:_input.text];
+        [_dataCenter addANote:newNote];
+        [_notesAlive addObject:newNote];
+        [self.tableView reloadData];
+        UIView *view = [self.view viewWithTag:BLUREFFECT];
+        [UIView beginAnimations:nil context:nil];
+        [UIView setAnimationCurve:UIViewAnimationCurveEaseIn];
+        [view setFrame:CGRectMake(0,screenHeight, screenWidth, screenHeight)];
+        [UIView commitAnimations];
+        _input = nil;
+        [view removeFromSuperview];
+    }
 }
 
 - (void)cancelButtonAction:(UIButton *)sender {
@@ -205,7 +216,7 @@
     UILabel *userLabel = [[UILabel alloc]initWithFrame:CGRectMake(0, topView, SLIDERWIDTH, NAVBAR)];
     _userInfo = userLabel;
     userLabel.backgroundColor = [UIColor whiteColor];
-    userLabel.text = [NoteDAO sharedNoteDao].currentID.username;
+    userLabel.text = _dataCenter.currentID.username;
     _sliderView.layer.shadowColor = [UIColor blackColor].CGColor;
     _sliderView.layer.shadowOpacity = 0.8f;
     _sliderView.layer.shadowRadius = 4.f;
@@ -238,15 +249,18 @@
 }
 //退出登录按钮
 - (void)leftBarButtonAction:(id)sender {
-    NoteDAO *dao = [NoteDAO sharedNoteDao];
-    NSArray *IDList = [dao IDStorage];
+    NSArray *IDList = [_dataCenter IDStorage];
     for(USERFILE *currentID in IDList) {
         currentID.issigned = false;
-        [dao modifyUserFile:currentID];
+        [_dataCenter modifyUserFile:currentID];
     }
-    dao.currentID = nil;
-    [dao unloadAllNotes];
+    _dataCenter.currentID = nil;
+    [_dataCenter unloadAllNotes];
     RegistViewController *reg = [[RegistViewController alloc]init];
+    [reg copyBlockContent:^(BOOL value) {
+        self.alreadySigned = value;
+    }];
+    self.alreadySigned = false;
     [self presentViewController:reg animated:true completion:nil];
 }
 

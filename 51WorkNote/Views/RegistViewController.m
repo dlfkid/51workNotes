@@ -19,12 +19,15 @@
 #import "NoteDAO.h"
 #import "UserID.h"
 
+
+
 @interface RegistViewController ()<UITextFieldDelegate>
 
 {
     CGFloat screenWidth;
     CGFloat screenHeight;
     CGFloat topView;
+    ReturnValue currentReturnBlock;
 }
 
 
@@ -41,6 +44,7 @@
     [super viewDidLoad];
     self.view.backgroundColor = [UIColor whiteColor];
     [self UIBuild];
+    
     // Do any additional setup after loading the view.
 }
 
@@ -115,12 +119,14 @@
             [self dismissViewControllerAnimated:true completion:nil];
         }];
         [alert addAction:warning];
+        currentReturnBlock(true);
         [self presentViewController:alert animated:true completion:nil];
     }
 }
 
 - (void)signUpButtonAction:(UIButton *)sender {
     if([self signUp] == true) {
+        currentReturnBlock(true);
         [self dismissViewControllerAnimated:true completion:nil];
     }
 }
@@ -216,6 +222,12 @@
 - (BOOL)textFieldShouldReturn:(UITextField *)textField {
     [textField resignFirstResponder];
     return true;
+}
+
+#pragma mark - returnBlock
+
+- (void)copyBlockContent:(ReturnValue)returnBlock {
+    currentReturnBlock = [returnBlock copy];
 }
 
 /*

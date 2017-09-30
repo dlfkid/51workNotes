@@ -34,6 +34,10 @@
     // Do any additional setup after loading the view.
 }
 
+- (void)viewWillAppear:(BOOL)animated {
+    self.navigationItem.title = [NSString stringWithFormat:@"%@'s notes",self.currentNote.userid];
+}
+
 - (void)didReceiveMemoryWarning {
     [super didReceiveMemoryWarning];
     // Dispose of any resources that can be recreated.
@@ -48,11 +52,11 @@
     topView = NAVBAR + STATEBAR;
     self.view.backgroundColor = [UIColor whiteColor];
     [self configureInfoView];
-    [self configureNavBarButton];
 }
 
-- (void)configureNavBarButton {
-    self.navigationItem.rightBarButtonItem = [[UIBarButtonItem alloc]initWithTitle:@"Finish" style:UIBarButtonItemStyleDone target:self action:@selector(rightBarButtonAction:)];
+
+- (void)leftBarbuttonAction:(UIBarButtonItem *)sender {
+    
 }
 
 - (void)rightBarButtonAction:(UIBarButtonItem *)sender {
@@ -81,12 +85,17 @@
 
 - (BOOL)textViewShouldBeginEditing:(UITextView *)textView {
     NSLog(@"textViewShouldBeginEditing");
+    self.navigationItem.rightBarButtonItem = [[UIBarButtonItem alloc]initWithTitle:@"Finish" style:UIBarButtonItemStyleDone target:self action:@selector(rightBarButtonAction:)];
     return true;
 }
 
-- (void)textViewDidChange:(UITextView *)textView {
-    NSLog(@"textViewDidChange");
+- (BOOL)textViewShouldEndEditing:(UITextView *)textView {
+    NSLog(@"textViewShouldEndEditing");
+    self.navigationItem.rightBarButtonItem = nil;
+    return true;
 }
+
+
 /*
 #pragma mark - Navigation
 
