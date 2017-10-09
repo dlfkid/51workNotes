@@ -37,6 +37,7 @@
 @property(nonatomic,strong) SimpleTabBar *lowTab;
 @property(nonatomic,strong) UITextView *input;
 @property(nonatomic,strong) UILabel *userInfo;
+@property(nonatomic,strong) UIButton *syncButton;
 
 @end
 
@@ -44,6 +45,7 @@
 
 - (void)viewDidLoad {
     [super viewDidLoad];
+    [self setUpNotificationCenter];
     [self UIBuild];
     // Do any additional setup after loading the view.
 }
@@ -87,6 +89,23 @@
         _dataCenter = [NoteDAO sharedNoteDao];
         _notesAlive = [_dataCenter loadAllNote];
     }
+}
+
+- (void)setUpNotificationCenter {
+    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(netWorkTaskError:) name:@"netWorkError" object:nil];
+    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(netWorkTaskFinished:) name:@"netWorkFinished" object:nil];
+}
+
+- (void)netWorkTaskError:(NSNotification *)sender {
+    
+}
+
+- (void)netWorkTaskFinished:(NSNotification *)sender {
+    [self.syncButton.layer removeAllAnimations];
+}
+
+- (void)dealloc {
+    [[NSNotificationCenter defaultCenter] removeObserver:self];
 }
 
 #pragma mark - UIBuild
@@ -212,17 +231,40 @@
 - (void)configureSliderView {
     NSLog(@"Configuring Slider View");
     self.sliderView = [[UIView alloc]initWithFrame:CGRectMake(screenWidth, NAVBAR + STATEBAR, SLIDERWIDTH, screenHeight)];
-    [self.sliderView setBackgroundColor:[UIColor lightGrayColor]];
+    [self.sliderView setBackgroundColor:[UIColor whiteColor]];
     UILabel *userLabel = [[UILabel alloc]initWithFrame:CGRectMake(0, topView, SLIDERWIDTH, NAVBAR)];
     _userInfo = userLabel;
     userLabel.backgroundColor = [UIColor whiteColor];
     userLabel.text = _dataCenter.currentID.username;
+    userLabel.textAlignment = NSTextAlignmentCenter;
     _sliderView.layer.shadowColor = [UIColor blackColor].CGColor;
     _sliderView.layer.shadowOpacity = 0.8f;
     _sliderView.layer.shadowRadius = 4.f;
     _sliderView.layer.shadowOffset = CGSizeMake(1, 1);
+    
+    //同步按钮
+    UIButton *syncButton = [[UIButton alloc]initWithFrame:CGRectMake((SLIDERWIDTH - 50)/2, screenHeight - 300, 50, 50)];
+    self.syncButton = syncButton;
+    [syncButton setImage:[UIImage imageNamed:@"icons8-Sync-48"] forState:UIControlStateNormal];
+    [syncButton addTarget:self action:@selector(syncButtonAction:) forControlEvents:UIControlEventTouchDown];
+    
+    [self.sliderView addSubview:syncButton];
     [self.sliderView addSubview:userLabel];
     [self.view addSubview:_sliderView];
+}
+
+- (void)syncButtonAction:(UIButton *)sender {
+    NSLog(@"Sync button clicked");
+    //旋转动画
+    CABasicAnimation *animate = [CABasicAnimation animationWithKeyPath:@"transform.rotation.z"];
+    animate.fromValue = [NSNumber numberWithFloat:0.f];
+    animate.toValue = [NSNumber numberWithFloat:M_PI *2];
+    animate.duration = 1;
+    animate.autoreverses = false;
+    animate.fillMode = kCAFillModeForwards;
+    animate.repeatCount = MAXFLOAT;
+    [self.syncButton.layer addAnimation:animate forKey:@"spin"];
+    [_dataCenter notesSynchrinuzation];
 }
 
 - (void)configureTopButtons {
@@ -245,7 +287,7 @@
         NSLog(@"Slider View has bugs");
     }
     [UIView commitAnimations];
-    //[self drawColorRect];
+    [self.syncButton.layer removeAnimationForKey:@"spin"];
 }
 //退出登录按钮
 - (void)leftBarButtonAction:(id)sender {

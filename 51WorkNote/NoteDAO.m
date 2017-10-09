@@ -33,6 +33,7 @@ static NoteDAO * sharedSingleton;
         sharedSingleton.severNotes = [NSMutableArray array];
         sharedSingleton.localNotes = [NSMutableArray array];
         sharedSingleton.IDStorage = [NSMutableArray array];
+        [sharedSingleton downLoadNoteFromServer];
     }
     return sharedSingleton;
 }
@@ -52,11 +53,14 @@ static NoteDAO * sharedSingleton;
     NSURLSessionConfiguration *defaultConfig = [NSURLSessionConfiguration defaultSessionConfiguration];
     NSURLSession *session = [NSURLSession sessionWithConfiguration:defaultConfig delegate:self delegateQueue:[NSOperationQueue mainQueue]];
     NSURLSessionDataTask *task = [session dataTaskWithRequest:request completionHandler:^(NSData * _Nullable data, NSURLResponse * _Nullable response, NSError * _Nullable error) {
-        if(!error) {
+        if(error) {
             NSLog(@"Error : %@",error.localizedDescription);
-        }else{
+        }else if(data != nil) {
             NSDictionary *recieveDict = [NSJSONSerialization JSONObjectWithData:data options:NSJSONReadingAllowFragments error:nil];
             [self analyzeData:recieveDict];
+        }
+        else {
+            NSLog(@"Empty Data recived");
         }
     }];
     [task resume];
@@ -143,17 +147,26 @@ static NoteDAO * sharedSingleton;
     }];
 }
 
+#pragma mark - Synchrinuzation method
+
 - (void)notesSynchrinuzation {
-    NSPredicate *filterLocal = [NSPredicate predicateWithFormat:@"NOT (SELF IN %@)",self.severNotes];
-    NSArray *uploadNotes = [self.localNotes filteredArrayUsingPredicate:filterLocal];
-    for(Note *upload in uploadNotes) {
-        [self uploadNotesToServer:upload];
+    //下载服务器上的笔记内容
+    if(self.severNotes.count != 0) {
+        //比较本地notes和服务器notes，将服务器上有而本地没有的notes下载到本地
+        NSPredicate *filterServer = [NSPredicate predicateWithFormat:@"NOT (SELF IN %@)",self.localNotes];
+        NSArray *downloadNotes = [self.severNotes filteredArrayUsingPredicate:filterServer];
+        for(Note *download in downloadNotes) {
+            [self.localNotes addObject:download];
+            [self addANote:download];
+        }
+        //再次比较本地notes和服务器notes，将本地已有而服务器上没有的note上传
+        NSPredicate *filterLocal = [NSPredicate predicateWithFormat:@"NOT (SELF IN %@)",self.severNotes];
+        NSArray *uploadNotes = [self.localNotes filteredArrayUsingPredicate:filterLocal];
+        for(Note *upload in uploadNotes) {
+            [self uploadNotesToServer:upload];
+        }
     }
-    NSPredicate *filterServer = [NSPredicate predicateWithFormat:@"NOT (SELF IN %@)",self.localNotes];
-    NSArray *deleteNotes = [self.severNotes filteredArrayUsingPredicate:filterServer];
-    for(Note *delete in deleteNotes) {
-        [self deleteNotesFromServer:delete];
-    }
+    [[NSNotificationCenter defaultCenter] postNotificationName:@"netWorkFinished" object:nil];
 }
 
 - (NSMutableArray *)loadAllNote {
@@ -193,6 +206,7 @@ static NoteDAO * sharedSingleton;
 }
 
 - (void)addANote:(Note *)newNote {
+    [self uploadNotesToServer:newNote];
     NSManagedObjectContext *context = [self managedObjectContext];
     NOTEDATA *noteData = [NSEntityDescription insertNewObjectForEntityForName:@"NOTEDATA" inManagedObjectContext:context];
     noteData.timestamp = newNote.timestamp;
@@ -204,6 +218,7 @@ static NoteDAO * sharedSingleton;
 }
 
 - (void)removeNote:(Note *)targetNote {
+    [self deleteNotesFromServer:targetNote];
     NSManagedObjectContext *context = [self managedObjectContext];
     NSEntityDescription *entityDes = [NSEntityDescription entityForName:@"NOTEDATA" inManagedObjectContext:context];
     NSFetchRequest *fetch = [[NSFetchRequest alloc]init];
@@ -223,6 +238,7 @@ static NoteDAO * sharedSingleton;
 }
 
 - (void)modifyNote:(Note *)targetNote {
+    [self modifyNotesFromServer:targetNote];
     NSManagedObjectContext *context = [self managedObjectContext];
     NSEntityDescription *entityDes = [NSEntityDescription entityForName:@"NOTEDATA" inManagedObjectContext:context];
     NSFetchRequest *fetch = [[NSFetchRequest alloc]init];
