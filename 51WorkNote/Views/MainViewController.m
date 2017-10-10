@@ -87,6 +87,7 @@
         [self presentViewController:reg animated:true completion:nil];
     }else{
         _dataCenter = [NoteDAO sharedNoteDao];
+        [_dataCenter downLoadNoteFromServer];
         _notesAlive = [_dataCenter loadAllNote];
     }
 }
@@ -101,6 +102,7 @@
 }
 
 - (void)netWorkTaskFinished:(NSNotification *)sender {
+    [self.tableView reloadData];
     [self.syncButton.layer removeAllAnimations];
 }
 
@@ -128,7 +130,6 @@
 }
 
 - (void)configureLowTab {
-    NSLog(@"configuring low bar");
     self.lowTab = [[SimpleTabBar alloc]initWithFrame:CGRectMake(0, screenHeight - 45, screenWidth, 45)];
     self.lowTab.tabBarDelegate = self;
     [self.view addSubview:_lowTab];
@@ -229,7 +230,6 @@
 }
 
 - (void)configureSliderView {
-    NSLog(@"Configuring Slider View");
     self.sliderView = [[UIView alloc]initWithFrame:CGRectMake(screenWidth, NAVBAR + STATEBAR, SLIDERWIDTH, screenHeight)];
     [self.sliderView setBackgroundColor:[UIColor whiteColor]];
     UILabel *userLabel = [[UILabel alloc]initWithFrame:CGRectMake(0, topView, SLIDERWIDTH, NAVBAR)];
@@ -268,7 +268,6 @@
 }
 
 - (void)configureTopButtons {
-    NSLog(@"configuring top view buttons");
     UIImage *rightButtonIcon = [UIImage imageNamed:@"icons8-User-48"];
     self.navigationItem.rightBarButtonItem = [[UIBarButtonItem alloc]initWithImage:rightButtonIcon style:UIBarButtonItemStylePlain target:self action:@selector(rightBarButtonAction:)];
     UIImage *leftButtonIcon = [UIImage imageNamed:@"icons8-Export-26"];

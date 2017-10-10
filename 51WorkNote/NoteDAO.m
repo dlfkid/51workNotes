@@ -33,7 +33,6 @@ static NoteDAO * sharedSingleton;
         sharedSingleton.severNotes = [NSMutableArray array];
         sharedSingleton.localNotes = [NSMutableArray array];
         sharedSingleton.IDStorage = [NSMutableArray array];
-        [sharedSingleton downLoadNoteFromServer];
     }
     return sharedSingleton;
 }
@@ -74,12 +73,13 @@ static NoteDAO * sharedSingleton;
         for( NSDictionary *noteDict in notesDict ) {
             NSString *noteidStr = noteDict[@"ID"];
             int noteID = [noteidStr intValue];
-            Note *newNote = [[Note alloc]initWithUserid:noteDict[@"UserID"] AndNoteid:noteID  AndContent:noteDict[@"Content"] AndDate:noteDict[@"CDate"]];
+            Note *newNote = [[Note alloc]initWithUserid:nil AndNoteid:noteID  AndContent:noteDict[@"Content"] AndDate:noteDict[@"CDate"]];
+            newNote.userid = [self currentID].username;
             [self.severNotes addObject:newNote];
         }
         NSLog(@"read note success");
     }else{
-        NSLog(@"Error occur : %@",errMsg);
+        NSLog(@"ResultCode : %@",errMsg);
     }
 }
 
@@ -94,7 +94,7 @@ static NoteDAO * sharedSingleton;
     [request setHTTPMethod:@"POST"];
     
     NSURLSession *shared = [NSURLSession sharedSession];
-    [shared dataTaskWithRequest:request completionHandler:^(NSData * _Nullable data, NSURLResponse * _Nullable response, NSError * _Nullable error) {
+    NSURLSessionDataTask *task = [shared dataTaskWithRequest:request completionHandler:^(NSData * _Nullable data, NSURLResponse * _Nullable response, NSError * _Nullable error) {
         if(error){
             NSLog(@"Error : %@",error.localizedDescription);
         }else{
@@ -103,6 +103,7 @@ static NoteDAO * sharedSingleton;
             NSLog(@"ResultCode:%@",[resultCode errMessage]);
         }
     }];
+    [task resume];
 }
 
 - (void)deleteNotesFromServer:(Note *)note {
@@ -116,7 +117,7 @@ static NoteDAO * sharedSingleton;
     [request setHTTPMethod:@"POST"];
     
     NSURLSession *session = [NSURLSession sharedSession];
-    [session dataTaskWithRequest:request completionHandler:^(NSData * _Nullable data, NSURLResponse * _Nullable response, NSError * _Nullable error) {
+    NSURLSessionDataTask *task = [session dataTaskWithRequest:request completionHandler:^(NSData * _Nullable data, NSURLResponse * _Nullable response, NSError * _Nullable error) {
         if(error){
             NSLog(@"Error : %@",error.localizedDescription);
         }else{
@@ -125,6 +126,7 @@ static NoteDAO * sharedSingleton;
             NSLog(@"ResultCode:%@",[resultCode errMessage]);
         }
     }];
+    [task resume];
 }
 
 - (void)modifyNotesFromServer:(Note *)note {
@@ -136,7 +138,7 @@ static NoteDAO * sharedSingleton;
     [request setHTTPMethod:@"POST"];
     
     NSURLSession *session = [NSURLSession sharedSession];
-    [session dataTaskWithRequest:request completionHandler:^(NSData * _Nullable data, NSURLResponse * _Nullable response, NSError * _Nullable error) {
+    NSURLSessionDataTask *task = [session dataTaskWithRequest:request completionHandler:^(NSData * _Nullable data, NSURLResponse * _Nullable response, NSError * _Nullable error) {
         if(error){
             NSLog(@"Error : %@",error.localizedDescription);
         }else{
@@ -145,6 +147,7 @@ static NoteDAO * sharedSingleton;
             NSLog(@"ResultCode:%@",[resultCode errMessage]);
         }
     }];
+    [task resume];
 }
 
 #pragma mark - Synchrinuzation method
@@ -155,13 +158,17 @@ static NoteDAO * sharedSingleton;
         //比较本地notes和服务器notes，将服务器上有而本地没有的notes下载到本地
         NSPredicate *filterServer = [NSPredicate predicateWithFormat:@"NOT (SELF IN %@)",self.localNotes];
         NSArray *downloadNotes = [self.severNotes filteredArrayUsingPredicate:filterServer];
+        NSLog(@"%lu notes prepared to be download",downloadNotes.count);
         for(Note *download in downloadNotes) {
             [self.localNotes addObject:download];
             [self addANote:download];
         }
+    }
+    if(self.localNotes.count != 0) {
         //再次比较本地notes和服务器notes，将本地已有而服务器上没有的note上传
         NSPredicate *filterLocal = [NSPredicate predicateWithFormat:@"NOT (SELF IN %@)",self.severNotes];
         NSArray *uploadNotes = [self.localNotes filteredArrayUsingPredicate:filterLocal];
+        NSLog(@"%lu notes prepared to be upload",uploadNotes.count);
         for(Note *upload in uploadNotes) {
             [self uploadNotesToServer:upload];
         }
@@ -206,7 +213,6 @@ static NoteDAO * sharedSingleton;
 }
 
 - (void)addANote:(Note *)newNote {
-    [self uploadNotesToServer:newNote];
     NSManagedObjectContext *context = [self managedObjectContext];
     NOTEDATA *noteData = [NSEntityDescription insertNewObjectForEntityForName:@"NOTEDATA" inManagedObjectContext:context];
     noteData.timestamp = newNote.timestamp;

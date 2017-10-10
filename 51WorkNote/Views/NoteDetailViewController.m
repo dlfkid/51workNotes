@@ -95,13 +95,11 @@
 #pragma mark - TextViewDelegate
 
 - (BOOL)textViewShouldBeginEditing:(UITextView *)textView {
-    NSLog(@"textViewShouldBeginEditing");
     self.navigationItem.rightBarButtonItem = [[UIBarButtonItem alloc]initWithTitle:@"Finish" style:UIBarButtonItemStyleDone target:self action:@selector(rightBarButtonAction:)];
     return true;
 }
 
 - (BOOL)textViewShouldEndEditing:(UITextView *)textView {
-    NSLog(@"textViewShouldEndEditing");
     self.navigationItem.rightBarButtonItem = nil;
     return true;
 }
