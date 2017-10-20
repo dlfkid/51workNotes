@@ -40,25 +40,26 @@ static NoteDAO * sharedSingleton;
 
 #pragma mark - NSURLSessionRequst
 - (void)downLoadNoteFromServer {
-    NSString *hostUrlStr = HOSTNAME;
-    NSURL *hostUrl = [NSURL URLWithString:hostUrlStr];
-    NSString *requestBodyStr = [NSString stringWithFormat:@"email=%@&type=JSON&action=query",_currentID.username];
-    NSData *requestBody = [requestBodyStr dataUsingEncoding:NSUTF8StringEncoding];
-    
-    NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:hostUrl];
-    [request setHTTPBody:requestBody];
-    [request setHTTPMethod:@"POST"];
+    NSLog(@"Downloading server note data");
+    NSString *getURlString = [[NSString alloc]initWithFormat:@"http://www.51work6.com/service/mynotes/WebService.php?email=%@&type=JSON&action=query",_currentID.username];
+    getURlString = [getURlString stringByAddingPercentEncodingWithAllowedCharacters:[NSCharacterSet URLQueryAllowedCharacterSet]];
+    NSURL *getURL = [NSURL URLWithString:getURlString];
+    NSURLRequest *request = [NSURLRequest requestWithURL:getURL];
     
     NSURLSessionConfiguration *defaultConfig = [NSURLSessionConfiguration defaultSessionConfiguration];
-    NSURLSession *session = [NSURLSession sessionWithConfiguration:defaultConfig delegate:self delegateQueue:[NSOperationQueue mainQueue]];
+    NSURLSession *session = [NSURLSession sessionWithConfiguration:defaultConfig delegate:nil delegateQueue:[NSOperationQueue mainQueue]];
     NSURLSessionDataTask *task = [session dataTaskWithRequest:request completionHandler:^(NSData * _Nullable data, NSURLResponse * _Nullable response, NSError * _Nullable error) {
         if(error) {
             NSLog(@"Error : %@",error.localizedDescription);
         }else if(data != nil) {
-            NSDictionary *recieveDict = [NSJSONSerialization JSONObjectWithData:data options:NSJSONReadingAllowFragments error:nil];
+            NSLog(@"analizing recived server data");
+            NSError *error = nil;
+            NSDictionary *recieveDict = [NSJSONSerialization JSONObjectWithData:data options:NSJSONReadingAllowFragments error:&error];
+            if(error) {
+                NSLog(@"Error occur: %@",error.localizedDescription);
+            }
             [self analyzeData:recieveDict];
-        }
-        else {
+        }else {
             NSLog(@"Empty Data recived");
         }
     }];
@@ -76,8 +77,8 @@ static NoteDAO * sharedSingleton;
             Note *newNote = [[Note alloc]initWithUserid:nil AndNoteid:noteID  AndContent:noteDict[@"Content"] AndDate:noteDict[@"CDate"]];
             newNote.userid = [self currentID].username;
             [self.severNotes addObject:newNote];
+            NSLog(@"read note %@ success",newNote.content);
         }
-        NSLog(@"read note success");
     }else{
         NSLog(@"ResultCode : %@",errMsg);
     }

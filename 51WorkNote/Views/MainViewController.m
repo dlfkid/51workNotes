@@ -248,9 +248,28 @@
     [syncButton setImage:[UIImage imageNamed:@"icons8-Sync-48"] forState:UIControlStateNormal];
     [syncButton addTarget:self action:@selector(syncButtonAction:) forControlEvents:UIControlEventTouchDown];
     
+    //清除按钮
+    UIButton *clearAllButton = [[UIButton alloc]initWithFrame:CGRectMake(syncButton.frame.origin.x, screenHeight - 300 + 50 + 10, 50, 50)];
+    [clearAllButton addTarget:self action:@selector(clearAllNotesFromServer:) forControlEvents:UIControlEventTouchDown];
+    [clearAllButton setImage:[UIImage imageNamed:@"icons8-Trash-40"] forState:UIControlStateNormal];
+    
     [self.sliderView addSubview:syncButton];
     [self.sliderView addSubview:userLabel];
+    [self.sliderView addSubview:clearAllButton];
     [self.view addSubview:_sliderView];
+    
+}
+
+- (void)clearAllNotesFromServer:(UIButton *)sender {
+    NSString *msg = [NSString stringWithFormat:@"You have %lu notes on server, Are you sure to clear them all?",(unsigned long)_dataCenter.severNotes.count];
+    UIAlertController *confirm = [UIAlertController alertControllerWithTitle:@"warning" message:msg preferredStyle:UIAlertControllerStyleAlert];
+    UIAlertAction *yes = [UIAlertAction actionWithTitle:@"Yes" style:UIAlertActionStyleDestructive handler:^(UIAlertAction * _Nonnull action) {
+        
+    }];
+    UIAlertAction *no = [UIAlertAction actionWithTitle:@"no" style:UIAlertActionStyleCancel handler:nil];
+    [confirm addAction:yes];
+    [confirm addAction:no];
+    [self presentViewController:confirm animated:true completion:nil];
 }
 
 - (void)syncButtonAction:(UIButton *)sender {
