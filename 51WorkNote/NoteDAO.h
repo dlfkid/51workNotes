@@ -28,9 +28,17 @@
 
 - (void)notesSynchrinuzation;
 
+- (void)uploadNotesToServer:(Note *)note;
+
 - (void)addANote:(Note *)newNote;
 
 - (void)removeNote:(Note *)targetNote;
+
+- (void)deleteNotesFromServer:(Note *)note;
+
+- (void)deleteNotesFromServerWithID:(int)noteID;
+
+- (void)modifyNotesFromServer:(Note *)note;
 
 - (void)modifyNote:(Note *)targetNote;
 

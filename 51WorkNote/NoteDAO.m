@@ -41,14 +41,13 @@ static NoteDAO * sharedSingleton;
 #pragma mark - NSURLSessionRequst
 - (void)downLoadNoteFromServer {
     NSLog(@"Downloading server note data");
-    NSString *getURlString = [[NSString alloc]initWithFormat:@"http://www.51work6.com/service/mynotes/WebService.php?email=%@&type=JSON&action=query",_currentID.username];
-    getURlString = [getURlString stringByAddingPercentEncodingWithAllowedCharacters:[NSCharacterSet URLQueryAllowedCharacterSet]];
-    NSURL *getURL = [NSURL URLWithString:getURlString];
-    NSURLRequest *request = [NSURLRequest requestWithURL:getURL];
-    
-    NSURLSessionConfiguration *defaultConfig = [NSURLSessionConfiguration defaultSessionConfiguration];
-    NSURLSession *session = [NSURLSession sessionWithConfiguration:defaultConfig delegate:nil delegateQueue:[NSOperationQueue mainQueue]];
-    NSURLSessionDataTask *task = [session dataTaskWithRequest:request completionHandler:^(NSData * _Nullable data, NSURLResponse * _Nullable response, NSError * _Nullable error) {
+    NSURL *hostURL = [NSURL URLWithString:HOSTNAME];
+    NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:hostURL];
+    NSData *httpBody = [[NSString stringWithFormat:@"email=%@&type=JSON&action=query",_currentID.username] dataUsingEncoding:NSUTF8StringEncoding];
+    [request setHTTPMethod:@"POST"];
+    [request setHTTPBody:httpBody];
+    NSURLSession *sharedSession = [NSURLSession sharedSession];
+    NSURLSessionDataTask *task = [sharedSession dataTaskWithRequest:request completionHandler:^(NSData * _Nullable data, NSURLResponse * _Nullable response, NSError * _Nullable error) {
         if(error) {
             NSLog(@"Error : %@",error.localizedDescription);
         }else if(data != nil) {
@@ -58,7 +57,7 @@ static NoteDAO * sharedSingleton;
             if(error) {
                 NSLog(@"Error occur: %@",error.localizedDescription);
             }
-            [self analyzeData:recieveDict];
+             [self analyzeData:recieveDict];
         }else {
             NSLog(@"Empty Data recived");
         }
@@ -77,7 +76,6 @@ static NoteDAO * sharedSingleton;
             Note *newNote = [[Note alloc]initWithUserid:nil AndNoteid:noteID  AndContent:noteDict[@"Content"] AndDate:noteDict[@"CDate"]];
             newNote.userid = [self currentID].username;
             [self.severNotes addObject:newNote];
-            NSLog(@"read note %@ success",newNote.content);
         }
     }else{
         NSLog(@"ResultCode : %@",errMsg);
@@ -130,6 +128,29 @@ static NoteDAO * sharedSingleton;
     [task resume];
 }
 
+- (void)deleteNotesFromServerWithID:(int)noteID {
+    NSString *hostUrlStr = HOSTNAME;
+    NSURL *hostUrl = [NSURL URLWithString:hostUrlStr];
+    NSString *requestBodyStr = [NSString stringWithFormat:@"email=%@&type=JSON&action=remove&id=%d",_currentID.username,noteID];
+    NSData *requestBody = [requestBodyStr dataUsingEncoding:NSUTF8StringEncoding];
+    
+    NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:hostUrl];
+    [request setHTTPBody:requestBody];
+    [request setHTTPMethod:@"POST"];
+    
+    NSURLSession *session = [NSURLSession sharedSession];
+    NSURLSessionDataTask *task = [session dataTaskWithRequest:request completionHandler:^(NSData * _Nullable data, NSURLResponse * _Nullable response, NSError * _Nullable error) {
+        if(error){
+            NSLog(@"Error : %@",error.localizedDescription);
+        }else{
+            NSDictionary *DataRecive = [NSJSONSerialization JSONObjectWithData:data options:NSJSONReadingAllowFragments error:nil];
+            NSNumber *resultCode = DataRecive[@"ResultCode"];
+            NSLog(@"ResultCode:%@",[resultCode errMessage]);
+        }
+    }];
+    [task resume];
+}
+
 - (void)modifyNotesFromServer:(Note *)note {
     NSString *hostURLStr = HOSTNAME;
     NSURL *hostURL = [NSURL URLWithString:hostURLStr];
@@ -153,31 +174,46 @@ static NoteDAO * sharedSingleton;
 
 #pragma mark - Synchrinuzation method
 
+- (nullable Note *)getNotesFromServerWithID:(NSNumber *)serverID {
+    for(Note *sample in _severNotes) {
+        if(sample.noteid == serverID) {
+            return sample;
+        }
+    }
+    return NULL;
+}
+
 - (void)notesSynchrinuzation {
     //下载服务器上的笔记内容
+    [self downLoadNoteFromServer];
     if(self.severNotes.count != 0) {
+        NSMutableArray *serverIDs = [NSMutableArray array];
+        NSMutableArray *localIDs = [NSMutableArray array];
+        for(Note *severNote in _severNotes) {
+            [serverIDs addObject:severNote.noteid];
+        }
+        for(Note *localNote in _localNotes) {
+            [localIDs addObject:localNote.noteid];
+        }
         //比较本地notes和服务器notes，将服务器上有而本地没有的notes下载到本地
-        NSPredicate *filterServer = [NSPredicate predicateWithFormat:@"NOT (SELF IN %@)",self.localNotes];
-        NSArray *downloadNotes = [self.severNotes filteredArrayUsingPredicate:filterServer];
-        NSLog(@"%lu notes prepared to be download",downloadNotes.count);
-        for(Note *download in downloadNotes) {
-            [self.localNotes addObject:download];
-            [self addANote:download];
+        NSPredicate *filterServer = [NSPredicate predicateWithFormat:@"NOT (SELF IN %@)",localIDs];
+        NSArray *downloadNotes = [serverIDs filteredArrayUsingPredicate:filterServer];
+        NSLog(@"missing Notes are : %@",downloadNotes);
+        for(NSNumber *targetID in downloadNotes) {
+            [self.localNotes addObject:[self getNotesFromServerWithID:targetID]];
+            [self addANote:[self getNotesFromServerWithID:targetID]];
         }
     }
-    if(self.localNotes.count != 0) {
-        //再次比较本地notes和服务器notes，将本地已有而服务器上没有的note上传
-        NSPredicate *filterLocal = [NSPredicate predicateWithFormat:@"NOT (SELF IN %@)",self.severNotes];
-        NSArray *uploadNotes = [self.localNotes filteredArrayUsingPredicate:filterLocal];
-        NSLog(@"%lu notes prepared to be upload",uploadNotes.count);
-        for(Note *upload in uploadNotes) {
-            [self uploadNotesToServer:upload];
-        }
-    }
+    //重新载入所有notes
+    [self unloadAllNotes];
+    [self loadAllNote];
     [[NSNotificationCenter defaultCenter] postNotificationName:@"netWorkFinished" object:nil];
 }
 
 - (NSMutableArray *)loadAllNote {
+    if(_severNotes.count == 0) {
+        [self downLoadNoteFromServer];
+    }
     if(_localNotes.count == 0) {
         [self loadNotesFromCoreData];
     }
@@ -225,12 +261,12 @@ static NoteDAO * sharedSingleton;
 }
 
 - (void)removeNote:(Note *)targetNote {
-    [self deleteNotesFromServer:targetNote];
+    NSLog(@"Remove Note %d from dataCore",[targetNote.noteid intValue]);
     NSManagedObjectContext *context = [self managedObjectContext];
     NSEntityDescription *entityDes = [NSEntityDescription entityForName:@"NOTEDATA" inManagedObjectContext:context];
     NSFetchRequest *fetch = [[NSFetchRequest alloc]init];
     fetch.entity = entityDes;
-    NSPredicate *predicate = [NSPredicate predicateWithFormat:@"noteid = %@",targetNote.noteid];
+    NSPredicate *predicate = [NSPredicate predicateWithFormat:@"noteid = %d",[targetNote.noteid intValue]];
     [fetch setPredicate:predicate];
     NSError *error = nil;
     NSArray *listData = [context executeFetchRequest:fetch error:&error];
@@ -239,13 +275,13 @@ static NoteDAO * sharedSingleton;
     }else if(listData.count != 0) {
         NOTEDATA *target = listData.lastObject;
         [context deleteObject:target];
+        [self saveContext];
     }else {
         NSLog(@"Do not find target Notes");
     }
 }
 
 - (void)modifyNote:(Note *)targetNote {
-    [self modifyNotesFromServer:targetNote];
     NSManagedObjectContext *context = [self managedObjectContext];
     NSEntityDescription *entityDes = [NSEntityDescription entityForName:@"NOTEDATA" inManagedObjectContext:context];
     NSFetchRequest *fetch = [[NSFetchRequest alloc]init];
@@ -260,6 +296,7 @@ static NoteDAO * sharedSingleton;
         NOTEDATA *target = listData.lastObject;
         target.timestamp = targetNote.timestamp;
         target.content = targetNote.content;
+        target.noteid = [targetNote.noteid intValue];
         NSLog(@"Note ID: %d modified content:%@",target.noteid,target.content);
         [self saveContext];
     }else {

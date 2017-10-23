@@ -65,6 +65,7 @@
         UIAlertAction *yes = [UIAlertAction actionWithTitle:@"Yes" style:UIAlertActionStyleDefault handler:^(UIAlertAction * _Nonnull action) {
             _currentNote.content = _contentView.text;
             [[NoteDAO sharedNoteDao] modifyNote:_currentNote];
+            [[NoteDAO sharedNoteDao] modifyNotesFromServer:_currentNote];
             [_contentView resignFirstResponder];
         }];
         UIAlertAction *no = [UIAlertAction actionWithTitle:@"No" style:UIAlertActionStyleCancel handler:nil];
@@ -88,8 +89,14 @@
     contentView.text = _currentNote.content;
     _contentView = contentView;
     _contentView.delegate = self;
+    
+    UILabel *noteIDLabel = [[UILabel alloc]initWithFrame:CGRectMake(contentView.frame.origin.x, contentView.frame.origin.y + contentView.frame.size.height, contentView.frame.size.width, NAVBAR)];
+    noteIDLabel.font = [UIFont systemFontOfSize:16];
+    noteIDLabel.text = [NSString stringWithFormat:@"ID : %@",_currentNote.noteid];
+    
     [self.view addSubview:timeStamp];
     [self.view addSubview:contentView];
+    [self.view addSubview:noteIDLabel];
 }
 
 #pragma mark - TextViewDelegate

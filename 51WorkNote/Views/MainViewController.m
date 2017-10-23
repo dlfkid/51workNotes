@@ -87,7 +87,6 @@
         [self presentViewController:reg animated:true completion:nil];
     }else{
         _dataCenter = [NoteDAO sharedNoteDao];
-        [_dataCenter downLoadNoteFromServer];
         _notesAlive = [_dataCenter loadAllNote];
     }
 }
@@ -193,10 +192,9 @@
         [alert addAction:warning];
         [self presentViewController:alert animated:true completion:nil];
     }else {
-        int noteID = (int)self.notesAlive.count + 1;
         NSString *currentUser = _dataCenter.currentID.username;
-        Note *newNote = [Note noteWithCurrentTimeStamp:noteID userid:currentUser content:_input.text];
-        [_dataCenter addANote:newNote];
+        Note *newNote = [Note noteWithCurrentTimeStamp:0 userid:currentUser content:_input.text];
+        [_dataCenter uploadNotesToServer:newNote];
         [_notesAlive addObject:newNote];
         [self.tableView reloadData];
         UIView *view = [self.view viewWithTag:BLUREFFECT];
@@ -206,6 +204,7 @@
         [UIView commitAnimations];
         _input = nil;
         [view removeFromSuperview];
+        [_dataCenter notesSynchrinuzation];
     }
 }
 
@@ -264,7 +263,10 @@
     NSString *msg = [NSString stringWithFormat:@"You have %lu notes on server, Are you sure to clear them all?",(unsigned long)_dataCenter.severNotes.count];
     UIAlertController *confirm = [UIAlertController alertControllerWithTitle:@"warning" message:msg preferredStyle:UIAlertControllerStyleAlert];
     UIAlertAction *yes = [UIAlertAction actionWithTitle:@"Yes" style:UIAlertActionStyleDestructive handler:^(UIAlertAction * _Nonnull action) {
-        
+        //在这里输入要删除的NOTEID
+        for(Note *target in _dataCenter.severNotes) {
+            [_dataCenter deleteNotesFromServer:target];
+        }
     }];
     UIAlertAction *no = [UIAlertAction actionWithTitle:@"no" style:UIAlertActionStyleCancel handler:nil];
     [confirm addAction:yes];
@@ -369,6 +371,7 @@
 - (void)tableView:(UITableView *)tableView commitEditingStyle:(UITableViewCellEditingStyle)editingStyle forRowAtIndexPath:(NSIndexPath *)indexPath {
     if(editingStyle == UITableViewCellEditingStyleDelete) {
         Note *target = _notesAlive[indexPath.row];
+        [_dataCenter deleteNotesFromServerWithID:[target.noteid intValue]];
         [_dataCenter removeNote:target];
         [self.notesAlive removeObjectAtIndex:indexPath.row];
         [self.tableView deleteRowsAtIndexPaths:@[indexPath] withRowAnimation:UITableViewRowAnimationFade];
