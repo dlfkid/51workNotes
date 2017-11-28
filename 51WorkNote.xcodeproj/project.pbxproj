@@ -48,6 +48,8 @@
 		B4BA1A461F75063000EDD935 /* NoteDAO.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = NoteDAO.m; sourceTree = "<group>"; };
 		B4BA1A4F1F7506B400EDD935 /* Note.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = Note.h; path = NoteDataClass/Note.h; sourceTree = "<group>"; };
 		B4BA1A501F7506B400EDD935 /* Note.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = Note.m; path = NoteDataClass/Note.m; sourceTree = "<group>"; };
+		B4C8D3381F9F31E200145F6D /* MyToolsKit.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = MyToolsKit.h; sourceTree = "<group>"; };
+		B4C8D33B1F9F373000145F6D /* MyToolsKit_debug.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; path = MyToolsKit_debug.a; sourceTree = "<group>"; };
 		B4CD91211F7891F200175462 /* RegistViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = RegistViewController.h; path = Views/RegistViewController.h; sourceTree = "<group>"; };
 		B4CD91221F7891F200175462 /* RegistViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; name = RegistViewController.m; path = Views/RegistViewController.m; sourceTree = "<group>"; };
 /* End PBXFileReference section */
@@ -77,6 +79,7 @@
 		B4BA1A171F75043200EDD935 = {
 			isa = PBXGroup;
 			children = (
+				B4C8D3351F9F31E200145F6D /* StaticDebug */,
 				B4BA1A221F75043200EDD935 /* 51WorkNote */,
 				B4BA1A211F75043200EDD935 /* Products */,
 			);
@@ -149,6 +152,31 @@
 				B48F77B91F7B4B60005360DF /* UserID.m */,
 			);
 			name = NoteDataClass;
+			sourceTree = "<group>";
+		};
+		B4C8D3351F9F31E200145F6D /* StaticDebug */ = {
+			isa = PBXGroup;
+			children = (
+				B4C8D33B1F9F373000145F6D /* MyToolsKit_debug.a */,
+				B4C8D3361F9F31E200145F6D /* include */,
+			);
+			path = StaticDebug;
+			sourceTree = "<group>";
+		};
+		B4C8D3361F9F31E200145F6D /* include */ = {
+			isa = PBXGroup;
+			children = (
+				B4C8D3371F9F31E200145F6D /* MyToolsKit */,
+			);
+			path = include;
+			sourceTree = "<group>";
+		};
+		B4C8D3371F9F31E200145F6D /* MyToolsKit */ = {
+			isa = PBXGroup;
+			children = (
+				B4C8D3381F9F31E200145F6D /* MyToolsKit.h */,
+			);
+			path = MyToolsKit;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -359,7 +387,9 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				DEVELOPMENT_TEAM = VSH7W5Y66V;
 				INFOPLIST_FILE = 51WorkNote/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 11.0;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
+				OTHER_LDFLAGS = "\"$(SRCROOT)/StaticDebug/MyToolsKit_debug.a\"";
 				PRODUCT_BUNDLE_IDENTIFIER = "Misery.-1WorkNote";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 			};
@@ -371,6 +401,7 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				DEVELOPMENT_TEAM = VSH7W5Y66V;
 				INFOPLIST_FILE = 51WorkNote/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 11.0;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
 				PRODUCT_BUNDLE_IDENTIFIER = "Misery.-1WorkNote";
 				PRODUCT_NAME = "$(TARGET_NAME)";

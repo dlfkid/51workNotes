@@ -18,6 +18,7 @@
 #import "USERFILE+CoreDataClass.h"
 #import "NoteDAO.h"
 #import "UserID.h"
+#import "MyToolsKit.h"
 
 
 
@@ -66,7 +67,16 @@
     topView = NAVBAR + STATEBAR;
     [self configureLoginView];
     [self configureLoginButton];
+    [self configureLogoView];
     
+}
+
+- (void)configureLogoView {
+    UIImage *logoImage = [UIImage imageNamed:@"icons8-Typewriter With Tablet-100"];
+    UIImage *finalImage = [MyTools scaleToSize:logoImage size:CGSizeMake(50, 50)];
+    UIImageView *logo = [[UIImageView alloc]initWithImage:finalImage];
+    [logo setFrame:CGRectMake((screenWidth - logo.frame.size.width)/2, 300, logo.frame.size.width, logo.frame.size.height)];
+    [self.view addSubview:logo];
 }
 
 - (void)configureLoginView {

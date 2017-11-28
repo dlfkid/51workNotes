@@ -66,6 +66,7 @@ static NoteDAO * sharedSingleton;
 }
 
 - (void)analyzeData:(NSDictionary *)resdict {
+    [self.severNotes removeAllObjects];
     NSNumber *resultCode = resdict[@"ResultCode"];
     NSString *errMsg = [resultCode errMessage];
     if([resultCode integerValue] >= 0){
@@ -104,6 +105,7 @@ static NoteDAO * sharedSingleton;
     }];
     [task resume];
 }
+
 
 - (void)deleteNotesFromServer:(Note *)note {
     NSString *hostUrlStr = HOSTNAME;
@@ -184,6 +186,8 @@ static NoteDAO * sharedSingleton;
 }
 
 - (void)notesSynchrinuzation {
+    //清空CoreData
+    [self.localNotes removeAllObjects];
     //下载服务器上的笔记内容
     [self downLoadNoteFromServer];
     if(self.severNotes.count != 0) {
@@ -196,17 +200,12 @@ static NoteDAO * sharedSingleton;
             [localIDs addObject:localNote.noteid];
         }
         //比较本地notes和服务器notes，将服务器上有而本地没有的notes下载到本地
-        NSPredicate *filterServer = [NSPredicate predicateWithFormat:@"NOT (SELF IN %@)",localIDs];
-        NSArray *downloadNotes = [serverIDs filteredArrayUsingPredicate:filterServer];
-        NSLog(@"missing Notes are : %@",downloadNotes);
-        for(NSNumber *targetID in downloadNotes) {
-            [self.localNotes addObject:[self getNotesFromServerWithID:targetID]];
-            [self addANote:[self getNotesFromServerWithID:targetID]];
+        [self.localNotes addObjectsFromArray:self.severNotes];
+        //将本地notes存入coreData
+        for( Note *newNote in self.localNotes ) {
+            [self addANote:newNote];
         }
     }
-    //重新载入所有notes
-    [self unloadAllNotes];
-    [self loadAllNote];
     [[NSNotificationCenter defaultCenter] postNotificationName:@"netWorkFinished" object:nil];
 }
 
@@ -222,11 +221,13 @@ static NoteDAO * sharedSingleton;
 
 - (void)unloadAllNotes {
     [self.localNotes removeAllObjects];
+    [self.severNotes removeAllObjects];
 }
 
 #pragma mark - CoreDataFunction
 
 - (void)loadNotesFromCoreData {
+    [self.localNotes removeAllObjects];
     NSManagedObjectContext *context = [self managedObjectContext];
     NSEntityDescription *entityDesctiption = [NSEntityDescription entityForName:@"NOTEDATA" inManagedObjectContext:context];
     NSFetchRequest *fetchReq = [[NSFetchRequest alloc]init];

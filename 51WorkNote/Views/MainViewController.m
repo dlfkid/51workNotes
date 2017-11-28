@@ -77,7 +77,7 @@
 */
 #pragma mark - LoadDataBase
 
-- (void)setUpNoteDataAssistObject {
+- (void) setUpNoteDataAssistObject {
     if(self.alreadySigned == false) {
         NSLog(@"No singed in ID aquired, entering regist view");
         RegistViewController *reg = [[RegistViewController alloc]init];
@@ -102,7 +102,6 @@
 
 - (void)netWorkTaskFinished:(NSNotification *)sender {
     [self.tableView reloadData];
-    [self.syncButton.layer removeAllAnimations];
 }
 
 - (void)dealloc {
@@ -195,7 +194,8 @@
         NSString *currentUser = _dataCenter.currentID.username;
         Note *newNote = [Note noteWithCurrentTimeStamp:0 userid:currentUser content:_input.text];
         [_dataCenter uploadNotesToServer:newNote];
-        [_notesAlive addObject:newNote];
+        [_dataCenter addANote:newNote];
+        [self.notesAlive addObject:newNote];
         [self.tableView reloadData];
         UIView *view = [self.view viewWithTag:BLUREFFECT];
         [UIView beginAnimations:nil context:nil];
@@ -204,7 +204,6 @@
         [UIView commitAnimations];
         _input = nil;
         [view removeFromSuperview];
-        [_dataCenter notesSynchrinuzation];
     }
 }
 
@@ -260,6 +259,7 @@
 }
 
 - (void)clearAllNotesFromServer:(UIButton *)sender {
+    [_dataCenter downLoadNoteFromServer];
     NSString *msg = [NSString stringWithFormat:@"You have %lu notes on server, Are you sure to clear them all?",(unsigned long)_dataCenter.severNotes.count];
     UIAlertController *confirm = [UIAlertController alertControllerWithTitle:@"warning" message:msg preferredStyle:UIAlertControllerStyleAlert];
     UIAlertAction *yes = [UIAlertAction actionWithTitle:@"Yes" style:UIAlertActionStyleDestructive handler:^(UIAlertAction * _Nonnull action) {
@@ -286,6 +286,8 @@
     animate.repeatCount = MAXFLOAT;
     [self.syncButton.layer addAnimation:animate forKey:@"spin"];
     [_dataCenter notesSynchrinuzation];
+    [_dataCenter loadAllNote];
+    [self.tableView reloadData];
 }
 
 - (void)configureTopButtons {
